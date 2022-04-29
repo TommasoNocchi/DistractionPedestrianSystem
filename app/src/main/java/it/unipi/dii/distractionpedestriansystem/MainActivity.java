@@ -32,7 +32,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         if(sensorEvent.sensor.getType() == Sensor.TYPE_STEP_DETECTOR) {
 
         }else if(sensorEvent.sensor.getType() == Sensor.TYPE_LINEAR_ACCELERATION) {
-            fd.addToQueue(sensorEvent);
+            //
         }
     }
 
