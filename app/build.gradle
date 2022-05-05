@@ -40,4 +40,9 @@ dependencies {
     implementation("com.kontaktio:kontakt-sdk:7.0.3")
 
 
+    implementation 'io.kontakt.mvn:sdk:7.0.3'
+
+    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.4.1'
+    implementation 'com.android.support.constraint:constraint-layout:2.0.4'
+
 }
