@@ -86,7 +86,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         s2 = sm.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR);
         if(s1 == null || s2 == null) {
             Log.d(TAG, "Sensor(s) unavailable");
-            finish();
+            //finish();
         }
     }
 
