@@ -37,7 +37,7 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
     implementation 'com.squareup.retrofit2:converter-gson:2.1.0'
-    implementation("com.kontaktio:kontakt-sdk:7.0.3")
+    //implementation 'com.kontaktio:kontakt-sdk:7.0.3'
 
 
     implementation 'io.kontakt.mvn:sdk:7.0.3'
