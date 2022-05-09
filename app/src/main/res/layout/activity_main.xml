@@ -1,53 +1,115 @@
 <?xml version="1.0" encoding="utf-8"?>
-
-
-<LinearLayout
+<ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/activity_beacon_eddystone_scan"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
+    android:layout_height="wrap_content"
     >
 
-    <TextView
+  <LinearLayout
+      android:id="@+id/buttons_layout"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:orientation="vertical"
+      android:padding="@dimen/activity_padding"
+      tools:context="com.kontakt.sample.MainActivity"
+      >
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/button_scan_beacons"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center"
-        android:text="background_scan_description"
+        android:layout_marginBottom="4dp"
+        android:text="iBeacon / Eddystone Scanning"
         />
 
-    <Button
-        android:id="@+id/start_scan_button"
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/button_scan_beacons_pro"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="start_scanning_service" />
+        android:layout_marginBottom="4dp"
+        android:text="Beacon Pro Scanning"
+        />
 
-    <Button
-        android:id="@+id/stop_scan_button"
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/button_scan_regions"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="stop_scanning_service"
+        android:layout_marginBottom="4dp"
+        android:text="Scanning Regions"
         />
 
-    <ProgressBar
-        android:id="@+id/scanning_progress"
-        android:layout_width="wrap_content"
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/button_scan_filters"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_marginTop="16dp"
-        android:visibility="gone"
+        android:layout_marginBottom="4dp"
+        android:text="Scanning Filters"
         />
 
-    <TextView
-        android:id="@+id/status_text"
-        android:layout_width="wrap_content"
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/button_scan_background"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:layout_gravity="center_horizontal"
-        android:gravity="center"
-        tools:text="Devices discovered: 0"
+        android:layout_marginBottom="4dp"
+        android:text="Background Scanning"
         />
 
-</LinearLayout>
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/button_scan_foreground"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="4dp"
+        android:text="Foreground Scanning"
+        />
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/button_beacon_config"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="4dp"
+        android:text="Beacon Configuration"
+        />
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/button_beacon_pro_sensors"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="4dp"
+        android:text="Beacon Pro Sensors"
+        />
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/button_kontakt_cloud"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="4dp"
+        android:text="Kontakt Cloud"
+        />
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/button_beam_image"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="4dp"
+        android:text="Beam Image"
+        />
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/button_scan_with_paused_screen"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="4dp"
+        android:text="Android 8 scan with paused screen"
+        />
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/button_kontakt_cloud_with_coroutines"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="4dp"
+        android:text="Kontakt Cloud With Coroutines"
+        />
+  </LinearLayout>
+
+</ScrollView>
