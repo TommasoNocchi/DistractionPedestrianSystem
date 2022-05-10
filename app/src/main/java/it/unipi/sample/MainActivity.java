@@ -2,11 +2,18 @@ package it.unipi.sample;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -26,10 +33,27 @@ import it.unipi.sample.samples.KontaktCloudActivity;
 import it.unipi.sample.samples.ScanFiltersActivity;
 import it.unipi.sample.samples.ScanRegionsActivity;
 import it.unipi.sample.samples.android_8_screen_pause.AndroidAbove8ScanWithPausedScreen;
+import com.androidplot.xy.LineAndPointFormatter;
+import com.androidplot.xy.SimpleXYSeries;
+import com.androidplot.xy.XYPlot;
+import com.androidplot.xy.XYSeries;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+import java.util.ArrayList;
+import java.util.List;
+import java.util.SortedMap;
+
+
+public class MainActivity extends AppCompatActivity implements View.OnClickListener, SensorEventListener {
 
   public static final int REQUEST_CODE_PERMISSIONS = 100;
+
+  private SensorManager sm;
+  private Sensor s1;
+  private Sensor s2;
+  private static String TAG = "StepCounterExample";
+  private int systemStepCount;
+  private XYPlot plot;
+  private FilteredData fd;
 
   private LinearLayout buttonsLayout;
 
@@ -39,6 +63,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     setContentView(R.layout.activity_main);
     setupButtons();
     checkPermissions();
+
+    // Contain and filter acceleration values
+    fd = new FilteredData(this);
+
+    // Setup sensors
+    sensorSetup();
   }
 
   //Setting up buttons and listeners.
@@ -157,4 +187,48 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
   }
 
+  private void sensorSetup(){
+    sm = (SensorManager)getSystemService(SENSOR_SERVICE);
+    s1 = sm.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
+    s2 = sm.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR);
+    if(s1 == null || s2 == null)
+    {
+      Log.d(TAG, "Sensor(s) unavailable");
+      finish(); // l'attività viene terminata
+    }
+  }
+
+  @Override
+  public void onSensorChanged(SensorEvent event) {
+    if(event.sensor.getType() == Sensor.TYPE_STEP_DETECTOR) {
+      systemStepCount++;
+      //TextView tv2 = (TextView) findViewById(R.id.tv2);
+      //tv2.setText(String.format("%s%d", getString(R.string.system_counter_label), systemStepCount));
+    } else if(event.sensor.getType() == Sensor.TYPE_LINEAR_ACCELERATION) {
+      fd.addToQueue(event);
+    }
+  }
+
+  @Override
+  public void onAccuracyChanged(Sensor sensor, int accuracy) {
+    Log.i(TAG, "Accuracy changed");
+  }
+
+  @Override
+  protected void onResume() {
+    super.onResume();
+    sm.registerListener(this, s1, SensorManager.SENSOR_DELAY_GAME);
+    sm.registerListener(this, s2, SensorManager.SENSOR_DELAY_GAME);
+  }
+
+  @Override
+  protected void onPause() {
+    super.onPause();
+    sm.unregisterListener(this);
+  }
+
+  @Override
+  public void onPointerCaptureChanged(boolean hasCapture) {
+    super.onPointerCaptureChanged(hasCapture);
+  }
 }

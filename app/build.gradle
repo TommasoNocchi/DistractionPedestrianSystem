@@ -38,7 +38,7 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
     implementation 'com.squareup.retrofit2:converter-gson:2.1.0'
     //implementation 'com.kontaktio:kontakt-sdk:7.0.3'
-
+    implementation "com.androidplot:androidplot-core:1.5.7"
 
     implementation 'io.kontakt.mvn:sdk:7.0.3'
 
