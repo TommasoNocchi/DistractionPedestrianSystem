@@ -14,15 +14,15 @@
     <uses-permission android:name="android.permission.BLUETOOTH_PRIVILEGED" />
 
     <application
-        android:name=".App"
+        android:name="it.unipi.sample.App"
         android:allowBackup="true"
         android:label="@string/app_name"
         android:theme="@style/AppTheme">
-        <activity android:name=".samples.KontaktCloudWithCoroutinesActivity"></activity>
-        <activity android:name=".samples.android_8_screen_pause.AndroidAbove8ScanWithPausedScreen" />
-        <activity android:name=".samples.beam.PortalBeamImageActivity" /> <!-- Activities -->
+        <activity android:name="it.unipi.sample.samples.KontaktCloudWithCoroutinesActivity"></activity>
+        <activity android:name="it.unipi.sample.samples.android_8_screen_pause.AndroidAbove8ScanWithPausedScreen" />
+        <activity android:name="it.unipi.sample.samples.beam.PortalBeamImageActivity" /> <!-- Activities -->
         <activity
-            android:name=".MainActivity"
+            android:name="it.unipi.sample.MainActivity"
             android:exported="true"
             android:label="@string/app_name">
             <intent-filter>
@@ -32,44 +32,44 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".samples.BeaconEddystoneScanActivity"
+            android:name="it.unipi.sample.samples.BeaconEddystoneScanActivity"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".samples.BeaconProScanActivity"
+            android:name="it.unipi.sample.samples.BeaconProScanActivity"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".samples.ScanRegionsActivity"
+            android:name="it.unipi.sample.samples.ScanRegionsActivity"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".samples.ScanFiltersActivity"
+            android:name="it.unipi.sample.samples.ScanFiltersActivity"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".samples.BackgroundScanActivity"
+            android:name="it.unipi.sample.samples.BackgroundScanActivity"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".samples.BeaconConfigurationActivity"
+            android:name="it.unipi.sample.samples.BeaconConfigurationActivity"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".samples.BeaconProSensorsActivity"
+            android:name="it.unipi.sample.samples.BeaconProSensorsActivity"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".samples.KontaktCloudActivity"
+            android:name="it.unipi.sample.samples.KontaktCloudActivity"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".samples.ForegroundScanActivity"
+            android:name="it.unipi.sample.samples.ForegroundScanActivity"
             android:screenOrientation="portrait" /> <!-- Services -->
         <service
             android:name="com.kontakt.sdk.android.ble.service.ProximityService"
             android:exported="false" />
         <service
-            android:name=".service.BackgroundScanService"
+            android:name="it.unipi.sample.service.BackgroundScanService"
             android:enabled="true"
             android:exported="false" />
         <service
-            android:name=".service.ForegroundScanService"
+            android:name="it.unipi.sample.service.ForegroundScanService"
             android:exported="false" />
         <service
-            android:name=".samples.android_8_screen_pause.ShowNotificationService"
+            android:name="it.unipi.sample.samples.android_8_screen_pause.ShowNotificationService"
             android:enabled="true"
             android:exported="true" />
     </application>

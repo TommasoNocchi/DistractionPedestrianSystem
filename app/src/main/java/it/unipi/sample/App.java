@@ -1,0 +1,37 @@
+package it.unipi.sample;
+
+import android.app.Application;
+import android.util.Log;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
+import com.kontakt.sdk.android.common.KontaktSDK;
+import com.kontakt.sdk.android.common.log.KontaktSdkLogger;
+import com.kontakt.sdk.android.common.log.LogLevel;
+
+public class App extends Application {
+
+  private static final String API_KEY = "GozzrHDeoGQcTwIqilWtzuKzUDtxBgtw";
+
+  @Override
+  public void onCreate() {
+    super.onCreate();
+    initializeDependencies();
+  }
+
+  //Initializing Kontakt SDK. Insert your API key to allow all samples to work correctly
+  private void initializeDependencies() {
+    KontaktSDK.initialize(API_KEY).setKontaktSdkLogger(new KontaktSdkLogger() {
+      @Override
+      public boolean isLoggable(@NonNull LogLevel logLevel, @Nullable String tag) {
+        return true;
+      }
+
+      @Override
+      public void log(@NonNull LogLevel logLevel, @Nullable String msg, @Nullable String tag, @Nullable Throwable throwable) {
+        Log.d(tag, msg, throwable);
+      }
+    });
+  }
+}
