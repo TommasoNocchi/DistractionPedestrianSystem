@@ -30,7 +30,7 @@ public class FilteredData {
     // Duration of window
     private final long FIVE_SECONDS_IN_NANOS = 5000000000L;
     // Main activity, used for updating the UI
-    private MainActivity ma;
+    private BackgroundScanActivity ma;
 
     public FilteredData(BackgroundScanActivity ma) {
         this.ma = ma;

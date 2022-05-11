@@ -1,9 +1,12 @@
 package it.unipi.sample.samples;
 
+import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -18,6 +21,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 
 import com.androidplot.xy.XYPlot;
 import com.kontakt.sample.R;
@@ -44,12 +48,21 @@ public class BackgroundScanActivity extends AppCompatActivity implements View.On
   private Sensor s1;
   private Sensor s2;
   private static String TAG = "StepCounterExample";
-  private int systemStepCount;
+  private int systemStepCount = 0;
   private XYPlot plot;
   private FilteredData fd;
+  private int debug_counter = 0;
+  private int debug_step_counter = 0;
 
+  @SuppressLint("NewApi")
   @Override
   protected void onCreate(Bundle savedInstanceState) {
+    if(ContextCompat.checkSelfPermission(this,
+            Manifest.permission.ACTIVITY_RECOGNITION) == PackageManager.PERMISSION_DENIED){
+      //ask for permission
+      requestPermissions(new String[]{Manifest.permission.ACTIVITY_RECOGNITION}, 0);
+    }
+
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_background_scan);
     statusText = (TextView) findViewById(R.id.status_text);
@@ -66,6 +79,9 @@ public class BackgroundScanActivity extends AppCompatActivity implements View.On
 
     // Setup sensors
     sensorSetup();
+
+    TextView textView = (TextView) findViewById(R.id.debug_text_view);
+    textView.setText("ON_CREATE");
   }
 
   private void sensorSetup(){
@@ -75,16 +91,22 @@ public class BackgroundScanActivity extends AppCompatActivity implements View.On
     if(s1 == null || s2 == null)
     {
       Log.d(TAG, "Sensor(s) unavailable");
-      finish(); // l'attività viene terminata
+      finish();
     }
   }
 
   @Override
   public void onSensorChanged(SensorEvent event) {
+    TextView textView2 = (TextView) findViewById(R.id.debug_text_view);
+    textView2.setText("ON_SENSOR_CHANGED" + debug_counter++);
+
     if(event.sensor.getType() == Sensor.TYPE_STEP_DETECTOR) {
       systemStepCount++;
       TextView textView = (TextView) findViewById(R.id.step_counter_text);
-      textView.setText(systemStepCount);
+      textView.setText(String.format("%d", systemStepCount));
+
+      TextView textView3 = (TextView) findViewById(R.id.debug_text_view2);
+      textView3.setText("TYPE_STEP_DETECTOR" + debug_step_counter++);
     } else if(event.sensor.getType() == Sensor.TYPE_LINEAR_ACCELERATION) {
       fd.addToQueue(event);
     }
@@ -92,11 +114,15 @@ public class BackgroundScanActivity extends AppCompatActivity implements View.On
 
   @Override
   public void onAccuracyChanged(Sensor sensor, int accuracy) {
+    TextView textView = (TextView) findViewById(R.id.debug_text_view);
+    textView.setText("ON_ACCURACY_CHANGED");
     Log.i(TAG, "Accuracy changed");
   }
 
   @Override
   protected void onPause() {
+    TextView textView = (TextView) findViewById(R.id.debug_text_view);
+    textView.setText("ON_PAUSE");
     unregisterReceiver(scanningBroadcastReceiver);
     super.onPause();
     sm.unregisterListener(this);
@@ -104,11 +130,16 @@ public class BackgroundScanActivity extends AppCompatActivity implements View.On
 
   @Override
   public void onPointerCaptureChanged(boolean hasCapture) {
+    TextView textView = (TextView) findViewById(R.id.debug_text_view);
+    textView.setText("ON_POINTERCAPTURECHANGED");
     super.onPointerCaptureChanged(hasCapture);
   }
 
   @Override
   protected void onResume() {
+    TextView textView = (TextView) findViewById(R.id.debug_text_view);
+    textView.setText("ON_RESUME");
+
     super.onResume();
     //Register Broadcast receiver that will accept results from background scanning
     IntentFilter intentFilter = new IntentFilter(BackgroundScanService.ACTION_DEVICE_DISCOVERED);

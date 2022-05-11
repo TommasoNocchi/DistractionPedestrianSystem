@@ -47,13 +47,24 @@
       android:text="TextView" />
 
   <TextView
+      android:id="@+id/debug_text_view2"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:text="TextView" />
+
+  <TextView
+      android:id="@+id/debug_text_view"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:text="TextView" />
+
+  <TextView
       android:id="@+id/status_text"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
-      android:layout_marginTop="16dp"
       android:layout_gravity="center_horizontal"
+      android:layout_marginTop="16dp"
       android:gravity="center"
-      tools:text="Devices discovered: 0"
-      />
+      tools:text="Devices discovered: 0" />
 
 </LinearLayout>
