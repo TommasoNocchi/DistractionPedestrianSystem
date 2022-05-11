@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import it.unipi.sample.samples.BackgroundScanActivity;
+
 public class FilteredData {
 
     // Contains the values in current window as <timestamp (long), magnitude (float)>
@@ -30,7 +32,7 @@ public class FilteredData {
     // Main activity, used for updating the UI
     private MainActivity ma;
 
-    public FilteredData(MainActivity ma) {
+    public FilteredData(BackgroundScanActivity ma) {
         this.ma = ma;
     }
 

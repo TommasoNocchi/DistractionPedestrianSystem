@@ -127,9 +127,7 @@ public class BackgroundScanService extends Service {
     intent.setAction(ACTION_DEVICE_DISCOVERED);
     intent.putExtra(EXTRA_DEVICE, device);
     intent.putExtra(EXTRA_DEVICES_COUNT, devicesCount);
-    System.out.println("PROVA:"+device.getDistance());
     sendBroadcast(intent);
-    System.out.println("PROVA2:"+device.getDistance());
   }
 
   @Override
