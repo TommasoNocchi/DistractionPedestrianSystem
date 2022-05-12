@@ -1,6 +1,8 @@
 package it.unipi.sample;
 
 import android.Manifest;
+import android.app.KeyguardManager;
+import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.hardware.Sensor;
@@ -55,7 +57,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     setContentView(R.layout.activity_main);
     setupButtons();
     checkPermissions();
-
 
   }
 

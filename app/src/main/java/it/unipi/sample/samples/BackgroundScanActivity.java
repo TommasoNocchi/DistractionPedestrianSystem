@@ -2,6 +2,7 @@ package it.unipi.sample.samples;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.KeyguardManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -54,6 +55,8 @@ public class BackgroundScanActivity extends AppCompatActivity implements View.On
   private int debug_counter = 0;
   private int debug_step_counter = 0;
 
+  private static Context context;
+
   @SuppressLint("NewApi")
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -62,6 +65,16 @@ public class BackgroundScanActivity extends AppCompatActivity implements View.On
       //ask for permission
       requestPermissions(new String[]{Manifest.permission.ACTIVITY_RECOGNITION}, 0);
     }
+
+    //detect if the screen is locked;
+    BackgroundScanActivity.context = getApplicationContext();
+    KeyguardManager keyguardManager = (KeyguardManager) context.getSystemService(Context.KEYGUARD_SERVICE);
+    if( keyguardManager.inKeyguardRestrictedInputMode()) {
+      System.out.println("~~~SCREEN LOCKED~~~");
+    } else {
+      System.out.println("~~~SCREEN NOT LOCKED~~~");
+    }
+
 
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_background_scan);
