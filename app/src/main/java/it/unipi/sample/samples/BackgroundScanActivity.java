@@ -220,6 +220,7 @@ public class BackgroundScanActivity extends AppCompatActivity implements View.On
           if( myKM.inKeyguardRestrictedInputMode())
           {
             System.out.println("Screen off " + "LOCKED");
+            stopBackgroundService();
           } else
           {
             System.out.println("Screen off " + "UNLOCKED");
