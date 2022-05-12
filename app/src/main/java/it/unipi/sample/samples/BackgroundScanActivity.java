@@ -55,6 +55,13 @@ public class BackgroundScanActivity extends AppCompatActivity implements View.On
   private int debug_counter = 0;
   private int debug_step_counter = 0;
 
+  private boolean first_rilevation = true;
+
+  private int last_rssi;
+  private int RSSI_THRESHOLD = -100;
+  private double USER_SPEED_THRESHOLD = 10;
+  private long last_timestamp;
+
   private static Context context;
 
   @SuppressLint("NewApi")
@@ -66,14 +73,7 @@ public class BackgroundScanActivity extends AppCompatActivity implements View.On
       requestPermissions(new String[]{Manifest.permission.ACTIVITY_RECOGNITION}, 0);
     }
 
-    //detect if the screen is locked;
-    BackgroundScanActivity.context = getApplicationContext();
-    KeyguardManager keyguardManager = (KeyguardManager) context.getSystemService(Context.KEYGUARD_SERVICE);
-    if( keyguardManager.inKeyguardRestrictedInputMode()) {
-      System.out.println("~~~SCREEN LOCKED~~~");
-    } else {
-      System.out.println("~~~SCREEN NOT LOCKED~~~");
-    }
+    registerBroadcastReceiver();
 
 
     super.onCreate(savedInstanceState);
@@ -110,9 +110,6 @@ public class BackgroundScanActivity extends AppCompatActivity implements View.On
 
   @Override
   public void onSensorChanged(SensorEvent event) {
-    TextView textView2 = (TextView) findViewById(R.id.debug_text_view);
-    textView2.setText("ON_SENSOR_CHANGED" + debug_counter++);
-
     if(event.sensor.getType() == Sensor.TYPE_STEP_DETECTOR) {
       systemStepCount++;
       TextView textView = (TextView) findViewById(R.id.step_counter_text);
@@ -207,13 +204,74 @@ public class BackgroundScanActivity extends AppCompatActivity implements View.On
     }
   }
 
+  private void registerBroadcastReceiver() {
+
+    final IntentFilter theFilter = new IntentFilter();
+    /** System Defined Broadcast */
+    theFilter.addAction(Intent.ACTION_SCREEN_ON);
+    theFilter.addAction(Intent.ACTION_SCREEN_OFF);
+    theFilter.addAction(Intent.ACTION_USER_PRESENT);
+    BroadcastReceiver screenOnOffReceiver = new BroadcastReceiver() {
+      @Override
+      public void onReceive(Context context, Intent intent) {
+        String strAction = intent.getAction();
+        KeyguardManager myKM = (KeyguardManager) context.getSystemService(Context.KEYGUARD_SERVICE);
+        if(strAction.equals(Intent.ACTION_USER_PRESENT) || strAction.equals(Intent.ACTION_SCREEN_OFF) || strAction.equals(Intent.ACTION_SCREEN_ON)  )
+          if( myKM.inKeyguardRestrictedInputMode())
+          {
+            System.out.println("Screen off " + "LOCKED");
+          } else
+          {
+            System.out.println("Screen off " + "UNLOCKED");
+          }
+      }
+    };
+    getApplicationContext().registerReceiver(screenOnOffReceiver, theFilter);
+  }
+
+  private boolean isTheUserWalkingTowardsBeacon(long timestamp, int rssi){
+    // if the user is further wrt beacon compared its previous location the user is not walking
+    // towards beacon
+    if(rssi < last_rssi) return false;
+    double user_speed = (rssi - last_rssi)/(timestamp - last_timestamp);
+
+    if(user_speed > USER_SPEED_THRESHOLD)
+      return true;
+    return false;
+  }
+
   private final BroadcastReceiver scanningBroadcastReceiver = new BroadcastReceiver() {
     @Override
     public void onReceive(Context context, Intent intent) {
       //Device discovered!
       int devicesCount = intent.getIntExtra(BackgroundScanService.EXTRA_DEVICES_COUNT, 0);
       RemoteBluetoothDevice device = intent.getParcelableExtra(BackgroundScanService.EXTRA_DEVICE);
+
+      TextView textView3 = (TextView) findViewById(R.id.debug_text_view);
+      textView3.setText("RSSI: " + device.getRssi());
+
+      if(first_rilevation){
+        first_rilevation = false;
+        last_rssi = device.getRssi();
+        last_timestamp = device.getTimestamp();
+      }
+      else{
+        // I check if new device is nearest wrt last one
+        if(device.getRssi() > last_rssi){
+          last_rssi = device.getRssi();
+
+          // I check if new device is too near
+          if(last_rssi > RSSI_THRESHOLD){
+            // I check user activity
+            if(isTheUserWalkingTowardsBeacon(device.getTimestamp(), device.getRssi())){
+
+            }
+          }
+        }
+      }
       statusText.setText(String.format("Total discovered devices: %d\n\nLast scanned device:\n%s", devicesCount, device.toString()));
+      stopBackgroundService();
+      startBackgroundService();
     }
   };
 }

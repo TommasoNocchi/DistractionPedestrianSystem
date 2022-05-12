@@ -84,10 +84,10 @@ public class BackgroundScanService extends Service {
       public void onServiceReady() {
         proximityManager.startScanning();
         devicesCount = 0;
-        Toast.makeText(BackgroundScanService.this, "Scanning service started.", Toast.LENGTH_SHORT).show();
+        //Toast.makeText(BackgroundScanService.this, "Scanning service started.", Toast.LENGTH_SHORT).show();
       }
     });
-    stopAfterDelay();
+    //stopAfterDelay();
   }
 
   private void stopAfterDelay() {
@@ -137,7 +137,7 @@ public class BackgroundScanService extends Service {
       proximityManager.disconnect();
       proximityManager = null;
     }
-    Toast.makeText(BackgroundScanService.this, "Scanning service stopped.", Toast.LENGTH_SHORT).show();
+    //Toast.makeText(BackgroundScanService.this, "Scanning service stopped.", Toast.LENGTH_SHORT).show();
     super.onDestroy();
   }
 }
