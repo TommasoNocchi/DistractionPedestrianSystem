@@ -19,11 +19,6 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
-
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
@@ -35,8 +30,6 @@ import com.kontakt.sample.R;
 import it.unipi.sample.FilteredData;
 import it.unipi.sample.service.BackgroundScanService;
 import com.kontakt.sdk.android.common.profile.RemoteBluetoothDevice;
-
-import it.unipi.sample.service.*;
 
 /**
  * This is an example of implementing a background scan using Android's Service component.
@@ -57,15 +50,14 @@ public class BackgroundScanActivity extends AppCompatActivity implements View.On
   private int systemStepCount = 0;
   private XYPlot plot;
   private FilteredData fd;
-  private int debug_counter = 0;
-  private int debug_step_counter = 0;
+  private int debugStepCounter = 0;
 
-  private boolean first_rilevation = true;
+  private boolean firstRilevation = true;
 
-  private int last_rssi;
+  private int lastRssi;
   private int RSSI_THRESHOLD = -100;
   private double USER_SPEED_THRESHOLD = 10;
-  private long last_timestamp;
+  private long lastTimestamp;
 
   private boolean isInThePreAlert = false;
   private int lastStepCount;
@@ -79,9 +71,7 @@ public class BackgroundScanActivity extends AppCompatActivity implements View.On
       //ask for permission
       requestPermissions(new String[]{Manifest.permission.ACTIVITY_RECOGNITION}, 0);
     }
-
     registerBroadcastReceiver();
-
 
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_background_scan);
@@ -123,7 +113,7 @@ public class BackgroundScanActivity extends AppCompatActivity implements View.On
       textView.setText(String.format("%d", systemStepCount));
 
       TextView textView3 = (TextView) findViewById(R.id.debug_text_view2);
-      textView3.setText("TYPE_STEP_DETECTOR" + debug_step_counter++);
+      textView3.setText("TYPE_STEP_DETECTOR" + debugStepCounter++);
 
       isInThePreAlert = true;
     } else if(event.sensor.getType() == Sensor.TYPE_LINEAR_ACCELERATION) {
@@ -213,33 +203,6 @@ public class BackgroundScanActivity extends AppCompatActivity implements View.On
     }
   }
 
-  /*
-  private void registerBroadcastReceiver() {
-
-    final IntentFilter theFilter = new IntentFilter();
-    //System Defined Broadcast
-    theFilter.addAction(Intent.ACTION_SCREEN_ON);
-    theFilter.addAction(Intent.ACTION_SCREEN_OFF);
-    theFilter.addAction(Intent.ACTION_USER_PRESENT);
-    BroadcastReceiver screenOnOffReceiver = new BroadcastReceiver() {
-      @Override
-      public void onReceive(Context context, Intent intent) {
-        String strAction = intent.getAction();
-        KeyguardManager myKM = (KeyguardManager) context.getSystemService(Context.KEYGUARD_SERVICE);
-        if(strAction.equals(Intent.ACTION_USER_PRESENT) || strAction.equals(Intent.ACTION_SCREEN_OFF) || strAction.equals(Intent.ACTION_SCREEN_ON)  )
-          if( myKM.inKeyguardRestrictedInputMode())
-          {
-            System.out.println("Screen off " + "LOCKED");
-            stopBackgroundService();
-          } else
-          {
-            System.out.println("Screen off " + "UNLOCKED");
-          }
-      }
-    };
-    getApplicationContext().registerReceiver(screenOnOffReceiver, theFilter);
-  }*/
-
   private void registerBroadcastReceiver() {
 
     final IntentFilter theFilter = new IntentFilter();
@@ -259,14 +222,19 @@ public class BackgroundScanActivity extends AppCompatActivity implements View.On
           System.out.println("Screen off");
           stopBackgroundService();
         }
-        if(strAction.equals(Intent.ACTION_SCREEN_ON) )
+        if(strAction.equals(Intent.ACTION_SCREEN_ON) ){
           System.out.println("Screen on");
-        if(strAction.equals(Intent.ACTION_USER_PRESENT) && !myKM.isKeyguardLocked()){
+          startBackgroundService();
+        }
+
+        /*if(strAction.equals(Intent.ACTION_USER_PRESENT) && !myKM.isKeyguardLocked()){
           System.out.println("Device locked");
           stopBackgroundService();
         }
         else
           System.out.println("Device unlocked");
+
+         */
 
       }
     };
@@ -276,7 +244,7 @@ public class BackgroundScanActivity extends AppCompatActivity implements View.On
 
   private boolean isTheUserWalkingTowardsBeacon(long timestamp, int rssi){
 
-    double user_speed = (rssi - last_rssi)/(timestamp - last_timestamp);
+    double user_speed = (rssi - lastRssi)/(timestamp - lastTimestamp);
 
     if(user_speed > USER_SPEED_THRESHOLD)
       return true;
@@ -296,15 +264,15 @@ public class BackgroundScanActivity extends AppCompatActivity implements View.On
       TextView textView3 = (TextView) findViewById(R.id.debug_text_view);
       textView3.setText("RSSI: " + deviceRSSI);
 
-      if(first_rilevation){
-        first_rilevation = false;
-        last_rssi = deviceRSSI;
-        last_timestamp = device.getTimestamp();
+      if(firstRilevation){
+        firstRilevation = false;
+        lastRssi = deviceRSSI;
+        lastTimestamp = device.getTimestamp();
         lastStepCount = systemStepCount;
       }
       else{
         // I check if new device is nearest wrt last one
-        if(deviceRSSI > last_rssi){ //(FORSE si può levare perch* c'è): ASCOLTARE AUDIO MINUTO 19:00 13/05/22 CHE MOTIVA DI TENERE QUESTO IF
+        if(deviceRSSI > lastRssi){ //(FORSE si può levare perch* c'è): ASCOLTARE AUDIO MINUTO 19:00 13/05/22 CHE MOTIVA DI TENERE QUESTO IF
           // I check if new device is too near
           if(deviceRSSI > RSSI_THRESHOLD){ //PRE-ALERT
 
@@ -330,7 +298,7 @@ public class BackgroundScanActivity extends AppCompatActivity implements View.On
 
             }
           }
-          last_rssi = deviceRSSI;
+          lastRssi = deviceRSSI;
         }
       }
       
