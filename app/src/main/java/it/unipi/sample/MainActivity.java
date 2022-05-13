@@ -2,7 +2,10 @@ package it.unipi.sample;
 
 import android.Manifest;
 import android.app.KeyguardManager;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.hardware.Sensor;
@@ -55,10 +58,43 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main);
+    registerBroadcastReceiver();
     setupButtons();
     checkPermissions();
 
   }
+
+  private void registerBroadcastReceiver() {
+
+    final IntentFilter theFilter = new IntentFilter();
+    /** System Defined Broadcast */
+    theFilter.addAction(Intent.ACTION_SCREEN_ON);
+    theFilter.addAction(Intent.ACTION_SCREEN_OFF);
+    theFilter.addAction(Intent.ACTION_USER_PRESENT);
+
+    BroadcastReceiver screenOnOffReceiver = new BroadcastReceiver() {
+
+      @Override
+      public void onReceive(Context context, Intent intent) {
+        String strAction = intent.getAction();
+
+        KeyguardManager myKM = (KeyguardManager) context.getSystemService(Context.KEYGUARD_SERVICE);
+        if(strAction.equals(Intent.ACTION_SCREEN_OFF))
+          System.out.println("Screen off");
+        if(strAction.equals(Intent.ACTION_SCREEN_ON) )
+          System.out.println("Screen on");
+        if(strAction.equals(Intent.ACTION_USER_PRESENT) && !myKM.isKeyguardLocked())
+          System.out.println("Device locked");
+        else
+          System.out.println("Device unlocked");
+
+      }
+    };
+
+    getApplicationContext().registerReceiver(screenOnOffReceiver, theFilter);
+  }
+
+
 
   //Setting up buttons and listeners.
   private void setupButtons() {
