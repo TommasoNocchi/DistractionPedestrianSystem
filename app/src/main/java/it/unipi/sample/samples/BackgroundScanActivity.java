@@ -19,6 +19,11 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
@@ -62,6 +67,8 @@ public class BackgroundScanActivity extends AppCompatActivity implements View.On
   private double USER_SPEED_THRESHOLD = 10;
   private long last_timestamp;
 
+  private boolean isInThePreAlert = false;
+  private int lastStepCount;
   private static Context context;
 
   @SuppressLint("NewApi")
@@ -117,6 +124,8 @@ public class BackgroundScanActivity extends AppCompatActivity implements View.On
 
       TextView textView3 = (TextView) findViewById(R.id.debug_text_view2);
       textView3.setText("TYPE_STEP_DETECTOR" + debug_step_counter++);
+
+      isInThePreAlert = true;
     } else if(event.sensor.getType() == Sensor.TYPE_LINEAR_ACCELERATION) {
       fd.addToQueue(event);
     }
@@ -204,10 +213,11 @@ public class BackgroundScanActivity extends AppCompatActivity implements View.On
     }
   }
 
+  /*
   private void registerBroadcastReceiver() {
 
     final IntentFilter theFilter = new IntentFilter();
-    /** System Defined Broadcast */
+    //System Defined Broadcast
     theFilter.addAction(Intent.ACTION_SCREEN_ON);
     theFilter.addAction(Intent.ACTION_SCREEN_OFF);
     theFilter.addAction(Intent.ACTION_USER_PRESENT);
@@ -228,12 +238,44 @@ public class BackgroundScanActivity extends AppCompatActivity implements View.On
       }
     };
     getApplicationContext().registerReceiver(screenOnOffReceiver, theFilter);
+  }*/
+
+  private void registerBroadcastReceiver() {
+
+    final IntentFilter theFilter = new IntentFilter();
+    /** System Defined Broadcast */
+    theFilter.addAction(Intent.ACTION_SCREEN_ON);
+    theFilter.addAction(Intent.ACTION_SCREEN_OFF);
+    theFilter.addAction(Intent.ACTION_USER_PRESENT);
+
+    BroadcastReceiver screenOnOffReceiver = new BroadcastReceiver() {
+
+      @Override
+      public void onReceive(Context context, Intent intent) {
+        String strAction = intent.getAction();
+
+        KeyguardManager myKM = (KeyguardManager) context.getSystemService(Context.KEYGUARD_SERVICE);
+        if(strAction.equals(Intent.ACTION_SCREEN_OFF)) {
+          System.out.println("Screen off");
+          stopBackgroundService();
+        }
+        if(strAction.equals(Intent.ACTION_SCREEN_ON) )
+          System.out.println("Screen on");
+        if(strAction.equals(Intent.ACTION_USER_PRESENT) && !myKM.isKeyguardLocked()){
+          System.out.println("Device locked");
+          stopBackgroundService();
+        }
+        else
+          System.out.println("Device unlocked");
+
+      }
+    };
+
+    getApplicationContext().registerReceiver(screenOnOffReceiver, theFilter);
   }
 
   private boolean isTheUserWalkingTowardsBeacon(long timestamp, int rssi){
-    // if the user is further wrt beacon compared its previous location the user is not walking
-    // towards beacon
-    if(rssi < last_rssi) return false;
+
     double user_speed = (rssi - last_rssi)/(timestamp - last_timestamp);
 
     if(user_speed > USER_SPEED_THRESHOLD)
@@ -244,32 +286,54 @@ public class BackgroundScanActivity extends AppCompatActivity implements View.On
   private final BroadcastReceiver scanningBroadcastReceiver = new BroadcastReceiver() {
     @Override
     public void onReceive(Context context, Intent intent) {
+      
       //Device discovered!
       int devicesCount = intent.getIntExtra(BackgroundScanService.EXTRA_DEVICES_COUNT, 0);
       RemoteBluetoothDevice device = intent.getParcelableExtra(BackgroundScanService.EXTRA_DEVICE);
+      int deviceRSSI = device.getRssi();
+
 
       TextView textView3 = (TextView) findViewById(R.id.debug_text_view);
-      textView3.setText("RSSI: " + device.getRssi());
+      textView3.setText("RSSI: " + deviceRSSI);
 
       if(first_rilevation){
         first_rilevation = false;
-        last_rssi = device.getRssi();
+        last_rssi = deviceRSSI;
         last_timestamp = device.getTimestamp();
+        lastStepCount = systemStepCount;
       }
       else{
         // I check if new device is nearest wrt last one
-        if(device.getRssi() > last_rssi){
-          last_rssi = device.getRssi();
-
+        if(deviceRSSI > last_rssi){ //(FORSE si può levare perch* c'è): ASCOLTARE AUDIO MINUTO 19:00 13/05/22 CHE MOTIVA DI TENERE QUESTO IF
           // I check if new device is too near
-          if(last_rssi > RSSI_THRESHOLD){
+          if(deviceRSSI > RSSI_THRESHOLD){ //PRE-ALERT
+
+            /**
+            //Soluzione 1 (PER ORA NON SI GESTISCE IL CASO SE ENTRA NEL PRE ALERT MA POI CI ESCE, QUINDI RILEVA UNO STEP COUNT E MANDA ERRONAMENTE L'ALERT)
+            isInThePreAlert=false;
+            while(!isInThePreAlert && deviceRSSI > RSSI_THRESHOLD){
+              //rimane qui
+            }
+            //quando esce mandare ALERT
+            */
+
+
+            if(systemStepCount> lastStepCount){ //Sta camminando
+
+              //ALERT mettere metri dal possibile pericolo per vedere che si sta avvicinando sempre di più
+
+              lastStepCount = systemStepCount;
+            }
+
             // I check user activity
-            if(isTheUserWalkingTowardsBeacon(device.getTimestamp(), device.getRssi())){
+            if(isTheUserWalkingTowardsBeacon(device.getTimestamp(), deviceRSSI)){
 
             }
           }
+          last_rssi = deviceRSSI;
         }
       }
+      
       statusText.setText(String.format("Total discovered devices: %d\n\nLast scanned device:\n%s", devicesCount, device.toString()));
       stopBackgroundService();
       startBackgroundService();
