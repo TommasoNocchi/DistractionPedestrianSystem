@@ -31,6 +31,8 @@ import it.unipi.sample.FilteredData;
 import it.unipi.sample.service.BackgroundScanService;
 import com.kontakt.sdk.android.common.profile.RemoteBluetoothDevice;
 
+import java.util.ArrayList;
+
 /**
  * This is an example of implementing a background scan using Android's Service component.
  */
@@ -54,15 +56,16 @@ public class BackgroundScanActivity extends AppCompatActivity implements View.On
 
   private boolean firstRilevation = true;
 
-  private int lastRssi;
+  private int last_rssi;
   private int RSSI_THRESHOLD = -100;
   private double USER_SPEED_THRESHOLD = 10;
-  private long lastTimestamp;
+  private long last_timestamp;
 
   private boolean isInThePreAlert = false;
-  private int lastStepCount;
-  private static Context context;
+  private int last_step_count;
 
+  private static Context context;
+  private ArrayList<RemoteBluetoothDevice> encounteredDevs = new ArrayList<>(); // DA DECIDERE
   @SuppressLint("NewApi")
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -244,7 +247,7 @@ public class BackgroundScanActivity extends AppCompatActivity implements View.On
 
   private boolean isTheUserWalkingTowardsBeacon(long timestamp, int rssi){
 
-    double user_speed = (rssi - lastRssi)/(timestamp - lastTimestamp);
+    double user_speed = (rssi - last_rssi)/(timestamp - last_timestamp);
 
     if(user_speed > USER_SPEED_THRESHOLD)
       return true;
@@ -266,13 +269,13 @@ public class BackgroundScanActivity extends AppCompatActivity implements View.On
 
       if(firstRilevation){
         firstRilevation = false;
-        lastRssi = deviceRSSI;
-        lastTimestamp = device.getTimestamp();
-        lastStepCount = systemStepCount;
+        last_rssi = deviceRSSI;
+        last_timestamp = device.getTimestamp();
+        last_step_count = systemStepCount;
       }
       else{
         // I check if new device is nearest wrt last one
-        if(deviceRSSI > lastRssi){ //(FORSE si può levare perch* c'è): ASCOLTARE AUDIO MINUTO 19:00 13/05/22 CHE MOTIVA DI TENERE QUESTO IF
+        if(deviceRSSI > last_rssi){ //(FORSE si può levare perch* c'è): ASCOLTARE AUDIO MINUTO 19:00 13/05/22 CHE MOTIVA DI TENERE QUESTO IF
           // I check if new device is too near
           if(deviceRSSI > RSSI_THRESHOLD){ //PRE-ALERT
 
@@ -286,11 +289,14 @@ public class BackgroundScanActivity extends AppCompatActivity implements View.On
             */
 
 
-            if(systemStepCount> lastStepCount){ //Sta camminando
+            if(systemStepCount> last_step_count){ //Sta camminando
 
               //ALERT mettere metri dal possibile pericolo per vedere che si sta avvicinando sempre di più
+              
+              
+              //Aggiungo in array locale dell'applicazione così da supportare una possibile implentazione di un log/history
 
-              lastStepCount = systemStepCount;
+              last_step_count = systemStepCount;
             }
 
             // I check user activity
@@ -298,7 +304,7 @@ public class BackgroundScanActivity extends AppCompatActivity implements View.On
 
             }
           }
-          lastRssi = deviceRSSI;
+          last_rssi = deviceRSSI;
         }
       }
       
