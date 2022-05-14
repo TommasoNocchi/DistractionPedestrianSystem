@@ -2,6 +2,10 @@ package it.unipi.sample;
 
 import android.Manifest;
 import android.app.KeyguardManager;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -12,6 +16,7 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.media.RingtoneManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
@@ -24,6 +29,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
 import androidx.core.content.ContextCompat;
 
 import com.kontakt.sample.R;
@@ -44,6 +50,7 @@ import com.androidplot.xy.XYPlot;
 import com.androidplot.xy.XYSeries;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.SortedMap;
 
@@ -60,9 +67,35 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     setContentView(R.layout.activity_main);
     setupButtons();
     checkPermissions();
-
+    int reqCode = 1;
+    Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+    showNotification(this, "Title", "SEI IN PERICOLO!!!!!", intent, reqCode);
   }
 
+  public void showNotification(Context context, String title, String message, Intent intent, int reqCode) {
+
+    PendingIntent pendingIntent = PendingIntent.getActivity(context, reqCode, intent, PendingIntent.FLAG_IMMUTABLE);
+    String CHANNEL_ID = "channel_name";// The id of the channel.
+    NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(context, CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_launcher_background)
+            .setContentTitle(title)
+            .setContentText(message)
+            .setOngoing(true)
+            .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION))
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setCategory(NotificationCompat.CATEGORY_CALL)
+            .setContentIntent(pendingIntent);
+    NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+      CharSequence name = "Channel Name";// The user-visible name of the channel.
+      int importance = NotificationManager.IMPORTANCE_HIGH;
+      NotificationChannel mChannel = new NotificationChannel(CHANNEL_ID, name, importance);
+      notificationManager.createNotificationChannel(mChannel);
+    }
+    notificationManager.notify(reqCode, notificationBuilder.build()); // 0 is the request code, it should be unique id
+
+    Log.d("showNotification", "showNotification: " + reqCode);
+  }
 
 
   //Setting up buttons and listeners.
