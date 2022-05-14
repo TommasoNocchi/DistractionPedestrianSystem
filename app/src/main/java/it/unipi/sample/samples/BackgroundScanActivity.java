@@ -326,15 +326,14 @@ public class BackgroundScanActivity extends AppCompatActivity implements View.On
     return Math.pow(10, (MEASURED_POWER-deviceRSSI)/(10*ENVIROMENT_FACTOR_CONSTANT));
   }
 
-  private void writeFileHistory(){
-
-  }
-
   //for possible localhistory
-  private void writeFileHistory(String data,Context context) {
+  private void writeFileHistory(Context context) {
+    for (RemoteBluetoothDevice en : encountered_devs){
+      //Scirverli...
+    }
     try {
       OutputStreamWriter outputStreamWriter = new OutputStreamWriter(context.openFileOutput("history.txt", Context.MODE_PRIVATE));
-      outputStreamWriter.write(data);
+      outputStreamWriter.write(encountered_devs.toString());
       outputStreamWriter.close();
     }
     catch (IOException e) {
