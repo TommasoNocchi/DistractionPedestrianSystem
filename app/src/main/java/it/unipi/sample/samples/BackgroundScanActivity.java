@@ -59,6 +59,8 @@ public class BackgroundScanActivity extends AppCompatActivity implements View.On
   private int last_rssi;
   private int RSSI_THRESHOLD = -100;
   private double USER_SPEED_THRESHOLD = 10;
+  private int MEASURED_POWER = -69;
+  private int ENVIROMENT_FACTOR_CONSTANT = 2; //Range 2-4: 2 = Low-strength
   private long last_timestamp;
 
   private boolean isInThePreAlert = false;
@@ -313,4 +315,8 @@ public class BackgroundScanActivity extends AppCompatActivity implements View.On
       startBackgroundService();
     }
   };
+
+  private double fromRSSItoMeter(int deviceRSSI){
+    return Math.pow(10, (MEASURED_POWER-deviceRSSI)/(10*ENVIROMENT_FACTOR_CONSTANT));
+  }
 }
