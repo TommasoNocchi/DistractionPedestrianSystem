@@ -28,7 +28,10 @@ import com.androidplot.xy.XYPlot;
 import com.kontakt.sample.R;
 
 import it.unipi.sample.FilteredData;
+import it.unipi.sample.samples.common.Rilevation;
 import it.unipi.sample.service.BackgroundScanService;
+import it.unipi.sample.service.MainService;
+
 import com.kontakt.sdk.android.common.profile.RemoteBluetoothDevice;
 
 import java.io.BufferedReader;
@@ -37,6 +40,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 
 /**
@@ -62,15 +66,19 @@ public class BackgroundScanActivity extends AppCompatActivity implements View.On
 
   private boolean firstRilevation = true;
 
-  private int last_rssi;
+  // steps by second thresholds
+  private double MIN_STEP_SPEED_THRESHOLD = 2;
+  private double MAX_STEP_SPEED_THRESHOLD = 10;
   private int RSSI_THRESHOLD = -100;
-  private double USER_SPEED_THRESHOLD = 10;
+  // user speed thresholds
+  private double MIN_USER_SPEED_THRESHOLD = 5;
+  private double MAX_USER_SPEED_THRESHOLD = 20;
   private int MEASURED_POWER = -69;
   private int ENVIROMENT_FACTOR_CONSTANT = 2; //Range 2-4: 2 = Low-strength
-  private long last_timestamp;
 
   private boolean isInThePreAlert = false;
   private int last_step_count;
+  private ArrayList<Rilevation> lastRilevations;
 
   private static Context context;
   private ArrayList<RemoteBluetoothDevice> encountered_devs = new ArrayList<>(); // DA DECIDERE
@@ -89,6 +97,8 @@ public class BackgroundScanActivity extends AppCompatActivity implements View.On
     statusText = (TextView) findViewById(R.id.status_text);
     serviceIntent = new Intent(getApplicationContext(), BackgroundScanService.class);
 
+    lastRilevations = new ArrayList<>();
+
     //Setup Toolbar
     setupToolbar();
 
@@ -103,6 +113,8 @@ public class BackgroundScanActivity extends AppCompatActivity implements View.On
 
     TextView textView = (TextView) findViewById(R.id.debug_text_view);
     textView.setText("ON_CREATE");
+
+    launchMainService();
   }
 
   private void sensorSetup(){
@@ -253,51 +265,80 @@ public class BackgroundScanActivity extends AppCompatActivity implements View.On
     getApplicationContext().registerReceiver(screenOnOffReceiver, theFilter);
   }
 
-  private boolean isTheUserWalkingTowardsBeacon(long timestamp, int rssi){
+  /*private boolean isTheUserWalkingTowardsBeacon(long timestamp, int rssi){
 
     double user_speed = (rssi - last_rssi)/(timestamp - last_timestamp);
 
     if(user_speed > USER_SPEED_THRESHOLD)
       return true;
     return false;
+  }*/
+
+  private void addRilevation(Rilevation newRilevation){
+    Rilevation rilevation;
+    for(int i=0; i<lastRilevations.size(); i++){
+      rilevation = lastRilevations.get(i);
+      if(rilevation.getNodeId().equals(newRilevation.getNodeId())){
+        lastRilevations.get(i).setRssi(newRilevation.getRssi());
+        lastRilevations.get(i).setTimestamp(newRilevation.getTimestamp());
+        return;
+      }
+    }
+    lastRilevations.add(newRilevation);
+  }
+
+  private Rilevation getRilevation(String nodeId){
+    Rilevation rilevation;
+    for(int i=0; i<lastRilevations.size(); i++){
+      rilevation = lastRilevations.get(i);
+      if(rilevation.getNodeId().equals(nodeId))
+        return rilevation;
+    }
+    return null;
   }
 
   private final BroadcastReceiver scanningBroadcastReceiver = new BroadcastReceiver() {
     @Override
     public void onReceive(Context context, Intent intent) {
       
-      //Device discovered!
+      //Device discovered
       int devicesCount = intent.getIntExtra(BackgroundScanService.EXTRA_DEVICES_COUNT, 0);
       RemoteBluetoothDevice device = intent.getParcelableExtra(BackgroundScanService.EXTRA_DEVICE);
-      int deviceRSSI = device.getRssi();
+      int deviceRssi = device.getRssi();
+      long deviceTimestamp = device.getTimestamp();
+      Rilevation rilevation;
 
 
       TextView textView3 = (TextView) findViewById(R.id.debug_text_view);
-      textView3.setText("RSSI: " + deviceRSSI);
+      textView3.setText("RSSI: " + deviceRssi);
 
       if(firstRilevation){
         firstRilevation = false;
-        last_rssi = deviceRSSI;
-        last_timestamp = device.getTimestamp();
+        rilevation = new Rilevation(device.getUniqueId(), device.getRssi(), device.getTimestamp());
+        lastRilevations.add(rilevation);
         last_step_count = systemStepCount;
       }
       else{
-        // I check if new device is nearest wrt last one
-        if(deviceRSSI > last_rssi){ //(FORSE si può levare perch* c'è): ASCOLTARE AUDIO MINUTO 19:00 13/05/22 CHE MOTIVA DI TENERE QUESTO IF
+        rilevation = getRilevation(device.getUniqueId());
+        // I check if new device is nearest wrt last one. I check also if the speed is too high,
+        // in such case there was an error in the rilevation
+        if((deviceRssi - rilevation.getRssi())/(deviceTimestamp - rilevation.getTimestamp()) < MIN_USER_SPEED_THRESHOLD &&
+              (deviceRssi - rilevation.getRssi())/(deviceTimestamp - rilevation.getTimestamp()) > MAX_USER_SPEED_THRESHOLD){ //(FORSE si può levare perch* c'è): ASCOLTARE AUDIO MINUTO 19:00 13/05/22 CHE MOTIVA DI TENERE QUESTO IF
           // I check if new device is too near
-          if(deviceRSSI > RSSI_THRESHOLD){ //PRE-ALERT
+          if(deviceRssi > RSSI_THRESHOLD){ //PRE-ALERT
 
             /**
             //Soluzione 1 (PER ORA NON SI GESTISCE IL CASO SE ENTRA NEL PRE ALERT MA POI CI ESCE, QUINDI RILEVA UNO STEP COUNT E MANDA ERRONAMENTE L'ALERT)
             isInThePreAlert=false;
-            while(!isInThePreAlert && deviceRSSI > RSSI_THRESHOLD){
+            while(!isInThePreAlert && deviceRssi > RSSI_THRESHOLD){
               //rimane qui
             }
             //quando esce mandare ALERT
             */
 
-
-            if(systemStepCount> last_step_count){ //Sta camminando
+            // I check if the user is walking. I check also if he has performed too steps, in such case
+            if((systemStepCount - last_step_count)/(deviceTimestamp - rilevation.getTimestamp()) < MAX_STEP_SPEED_THRESHOLD &&
+                    (systemStepCount - last_step_count)/(deviceTimestamp - rilevation.getTimestamp()) < MIN_STEP_SPEED_THRESHOLD){
 
               //ALERT mettere metri dal possibile pericolo per vedere che si sta avvicinando sempre di più
               
@@ -306,23 +347,32 @@ public class BackgroundScanActivity extends AppCompatActivity implements View.On
               encountered_devs.add(device);
               last_step_count = systemStepCount;
             }
-
-            // I check user activity
-            if(isTheUserWalkingTowardsBeacon(device.getTimestamp(), deviceRSSI)){
-
-            }
           }
-          last_rssi = deviceRSSI;
+          rilevation.setRssi(deviceRssi);
+          rilevation.setTimestamp(deviceTimestamp);
         }
       }
-      
+      System.out.println("Timestamp: " + new Timestamp(System.currentTimeMillis()).toString() + ", " + device.toString());
       statusText.setText(String.format("Total discovered devices: %d\n\nLast scanned device:\n%s", devicesCount, device.toString()));
       stopBackgroundService();
       startBackgroundService();
     }
   };
 
-  private double fromRSSItoMeter(int deviceRSSI){
+  private void launchMainService() {
+
+    Intent svc = new Intent(this, MainService.class);
+
+    stopService(svc);
+    startService(svc);
+
+    //finish();
+  }
+
+
+
+
+  private double fromRSSItoMeters(int deviceRSSI){
     return Math.pow(10, (MEASURED_POWER-deviceRSSI)/(10*ENVIROMENT_FACTOR_CONSTANT));
   }
 

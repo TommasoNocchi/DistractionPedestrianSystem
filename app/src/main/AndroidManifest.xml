@@ -16,6 +16,7 @@
     <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION"/>
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
 
     <application
         android:name="it.unipi.sample.App"
@@ -76,6 +77,9 @@
             android:name="it.unipi.sample.samples.android_8_screen_pause.ShowNotificationService"
             android:enabled="true"
             android:exported="true" />
+        <service
+            android:name="it.unipi.sample.service.MainService"
+            android:exported="false" />
     </application>
 
 </manifest>

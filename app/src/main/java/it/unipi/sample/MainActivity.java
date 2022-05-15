@@ -17,8 +17,10 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -27,6 +29,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
@@ -44,6 +47,8 @@ import it.unipi.sample.samples.KontaktCloudActivity;
 import it.unipi.sample.samples.ScanFiltersActivity;
 import it.unipi.sample.samples.ScanRegionsActivity;
 import it.unipi.sample.samples.android_8_screen_pause.AndroidAbove8ScanWithPausedScreen;
+import it.unipi.sample.service.MainService;
+
 import com.androidplot.xy.LineAndPointFormatter;
 import com.androidplot.xy.SimpleXYSeries;
 import com.androidplot.xy.XYPlot;
@@ -214,5 +219,41 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
   }
 
+  @RequiresApi(api = Build.VERSION_CODES.M)
+  @Override
+  protected void onResume() {
+    super.onResume();
 
+    if (!Settings.canDrawOverlays(this))
+      // Launch service right away - the user has already previously granted permission
+      checkDrawOverlayPermission();
+  }
+  private final static int REQUEST_CODE = 10101;
+
+  @RequiresApi(api = Build.VERSION_CODES.M)
+  private void checkDrawOverlayPermission() {
+
+    // Checks if app already has permission to draw overlays
+    if (!Settings.canDrawOverlays(this)) {
+
+      // If not, form up an Intent to launch the permission request
+      Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + getPackageName()));
+
+      // Launch Intent, with the supplied request code
+      startActivityForResult(intent, REQUEST_CODE);
+    }
+  }
+
+  @RequiresApi(api = Build.VERSION_CODES.M)
+  @Override
+  protected void onActivityResult(int requestCode, int resultCode,  Intent data) {
+    super.onActivityResult(requestCode, resultCode, data);
+
+    // Check if a request code is received that matches that which we provided for the overlay draw request
+    if (requestCode == REQUEST_CODE) {
+      // Double-check that the user granted it, and didn't just dismiss the request
+      if (!Settings.canDrawOverlays(this))
+        Toast.makeText(this, "Sorry. Can't draw overlays without permission...", Toast.LENGTH_SHORT).show();
+    }
+  }
 }
