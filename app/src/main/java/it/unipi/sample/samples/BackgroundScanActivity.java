@@ -328,16 +328,17 @@ public class BackgroundScanActivity extends AppCompatActivity implements View.On
 
   //for possible localhistory
   private void writeFileHistory(Context context) {
+    String tmp;
     for (RemoteBluetoothDevice en : encountered_devs){
-      //Scirverli...
-    }
-    try {
-      OutputStreamWriter outputStreamWriter = new OutputStreamWriter(context.openFileOutput("history.txt", Context.MODE_PRIVATE));
-      outputStreamWriter.write(encountered_devs.toString());
-      outputStreamWriter.close();
-    }
-    catch (IOException e) {
-      Log.e("Exception", "File write failed: " + e.toString());
+      tmp = "Name: "+en.getName()+", Timestamp: "+en.getTimestamp();
+      try {
+        OutputStreamWriter outputStreamWriter = new OutputStreamWriter(context.openFileOutput("history.txt", Context.MODE_PRIVATE));
+        outputStreamWriter.write(tmp);
+        outputStreamWriter.close();
+      }
+      catch (IOException e) {
+        Log.e("Exception", "File write failed: " + e.toString());
+      }
     }
   }
 
@@ -346,7 +347,7 @@ public class BackgroundScanActivity extends AppCompatActivity implements View.On
     String ret = "";
 
     try {
-      InputStream inputStream = context.openFileInput("config.txt");
+      InputStream inputStream = context.openFileInput("history.txt");
 
       if ( inputStream != null ) {
         InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
@@ -368,6 +369,13 @@ public class BackgroundScanActivity extends AppCompatActivity implements View.On
       Log.e("login activity", "Can not read file: " + e.toString());
     }
 
+    System.out.println("READ from file:"+ret);
     return ret;
   }
+
+  /**
+   * Note: The code above works well, but the resulting String will not contain any of the linebreaks from the file.
+   * To add linebreaks again, change line "stringBuilder.append(receiveString);" to "stringBuilder.append(receiveString).append("\n");".
+   * If you expect other linebreak characters (e.g. Windows text files will have \r etc..), in your final string, you'll have to adapt this a bit more.
+   */
 }
