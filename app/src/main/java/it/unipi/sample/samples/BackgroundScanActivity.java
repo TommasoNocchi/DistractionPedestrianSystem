@@ -46,7 +46,7 @@ import java.util.ArrayList;
 /**
  * This is an example of implementing a background scan using Android's Service component.
  */
-public class BackgroundScanActivity extends AppCompatActivity implements View.OnClickListener, SensorEventListener {
+public class BackgroundScanActivity extends AppCompatActivity implements View.OnClickListener {
 
   public static Intent createIntent(@NonNull Context context) {
     return new Intent(context, BackgroundScanActivity.class);
@@ -55,30 +55,10 @@ public class BackgroundScanActivity extends AppCompatActivity implements View.On
   private Intent serviceIntent;
   private TextView statusText;
 
-  private SensorManager sm;
-  private Sensor s1;
-  private Sensor s2;
+
   private static String TAG = "StepCounterExample";
-  private int systemStepCount = 0;
   private XYPlot plot;
   private FilteredData fd;
-  private int debugStepCounter = 0;
-
-  private boolean firstRilevation = true;
-
-  // steps by second thresholds
-  private double MIN_STEP_SPEED_THRESHOLD = 0.5;
-  private double MAX_STEP_SPEED_THRESHOLD = 10;
-  private int RSSI_THRESHOLD = -80;
-  // user speed thresholds
-  private double MIN_USER_SPEED_THRESHOLD = 2;
-  private double MAX_USER_SPEED_THRESHOLD = 35;
-  private int MEASURED_POWER = -69;
-  private int ENVIROMENT_FACTOR_CONSTANT = 2; //Range 2-4: 2 = Low-strength
-
-  private boolean isInThePreAlert = false;
-  private int last_step_count;
-  private ArrayList<Rilevation> lastRilevations;
 
   private static Context context;
   private ArrayList<RemoteBluetoothDevice> encountered_devs = new ArrayList<>();
@@ -97,62 +77,20 @@ public class BackgroundScanActivity extends AppCompatActivity implements View.On
     statusText = (TextView) findViewById(R.id.status_text);
     serviceIntent = new Intent(getApplicationContext(), BackgroundScanService.class);
 
-    lastRilevations = new ArrayList<>();
-
     //Setup Toolbar
     setupToolbar();
 
     //Setup buttons
     setupButtons();
 
-    // Contain and filter acceleration values
-    fd = new FilteredData(this);
-
-    // Setup sensors
-    sensorSetup();
-
-    TextView textView = (TextView) findViewById(R.id.debug_text_view);
-    textView.setText("ON_CREATE");
-
-    launchMainService();
-
     //readFromFile(context);
   }
 
-  private void sensorSetup(){
-    sm = (SensorManager)getSystemService(SENSOR_SERVICE);
-    s2 = sm.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR);
-    if(s1 == null || s2 == null)
-    {
-      Log.d(TAG, "Sensor(s) unavailable");
-    }
-  }
 
-
-
-  @Override
-  public void onSensorChanged(SensorEvent event) {
-    if(event.sensor.getType() == Sensor.TYPE_STEP_DETECTOR) {
-      systemStepCount++;
-      TextView textView = (TextView) findViewById(R.id.step_counter_text);
-      textView.setText(String.format("%d", systemStepCount));
-
-      isInThePreAlert = true;
-    } else if(event.sensor.getType() == Sensor.TYPE_LINEAR_ACCELERATION) {
-      fd.addToQueue(event);
-    }
-  }
-
-  @Override
-  public void onAccuracyChanged(Sensor sensor, int accuracy) {
-    Log.i(TAG, "Accuracy changed");
-  }
 
   @Override
   protected void onPause() {
-    unregisterReceiver(scanningBroadcastReceiver);
     super.onPause();
-    sm.unregisterListener(this);
   }
 
   @Override
@@ -163,12 +101,6 @@ public class BackgroundScanActivity extends AppCompatActivity implements View.On
   @Override
   protected void onResume() {
     super.onResume();
-    //Register Broadcast receiver that will accept results from background scanning
-    IntentFilter intentFilter = new IntentFilter(BackgroundScanService.ACTION_DEVICE_DISCOVERED);
-    registerReceiver(scanningBroadcastReceiver, intentFilter);
-
-    sm.registerListener(this, s1, SensorManager.SENSOR_DELAY_GAME);
-    sm.registerListener(this, s2, SensorManager.SENSOR_DELAY_GAME);
   }
 
   private void setupToolbar() {
@@ -271,116 +203,10 @@ public class BackgroundScanActivity extends AppCompatActivity implements View.On
     writeFileHistory(context);
   }
 
-
-  private void addRilevation(Rilevation newRilevation){
-    Rilevation rilevation;
-    for(int i=0; i<lastRilevations.size(); i++){
-      rilevation = lastRilevations.get(i);
-      if(rilevation.getNodeId().equals(newRilevation.getNodeId())){
-        lastRilevations.get(i).setRssi(newRilevation.getRssi());
-        lastRilevations.get(i).setTimestamp(newRilevation.getTimestamp());
-        return;
-      }
-    }
-    lastRilevations.add(newRilevation);
-  }
-
-  private Rilevation getRilevation(String nodeId){
-    Rilevation rilevation;
-    for(int i=0; i<lastRilevations.size(); i++){
-      rilevation = lastRilevations.get(i);
-      if(rilevation.getNodeId().equals(nodeId))
-        return rilevation;
-    }
-    return null;
-  }
-
-  private final BroadcastReceiver scanningBroadcastReceiver = new BroadcastReceiver() {
-    @Override
-    public void onReceive(Context context, Intent intent) {
-      
-      //Device discovered
-      int devicesCount = intent.getIntExtra(BackgroundScanService.EXTRA_DEVICES_COUNT, 0);
-      RemoteBluetoothDevice device = intent.getParcelableExtra(BackgroundScanService.EXTRA_DEVICE);
-      int deviceRssi = device.getRssi();
-      long deviceTimestamp = device.getTimestamp();
-      Rilevation rilevation;
-
-
-      TextView textView3 = (TextView) findViewById(R.id.debug_text_view);
-      textView3.setText("RSSI: " + deviceRssi);
-
-      if(firstRilevation){
-        firstRilevation = false;
-        rilevation = new Rilevation(device.getUniqueId(), device.getRssi(), device.getTimestamp());
-        lastRilevations.add(rilevation);
-        last_step_count = systemStepCount;
-      }
-      else{
-        rilevation = getRilevation(device.getUniqueId());
-        if(rilevation == null)
-          rilevation = new Rilevation(device.getUniqueId(), device.getRssi(), device.getTimestamp());
-
-        else
-        {
-          // I check if new device is nearest wrt last one. I check also if the speed is too high,
-          // in such case there was an error in the rilevation
-          //if(deviceRssi > lastRSSI) --> if(deviceRssi - lastRssi > SOGLIA)
-          if((deviceRssi - rilevation.getRssi())/(deviceTimestamp - rilevation.getTimestamp()) > MIN_USER_SPEED_THRESHOLD &&
-                  (deviceRssi - rilevation.getRssi())/(deviceTimestamp - rilevation.getTimestamp()) < MAX_USER_SPEED_THRESHOLD){ //(FORSE si può levare perch* c'è): ASCOLTARE AUDIO MINUTO 19:00 13/05/22 CHE MOTIVA DI TENERE QUESTO IF
-            // I check if new device is too near
-            if(deviceRssi > RSSI_THRESHOLD){ //PRE-ALERT
-              /**
-               //Soluzione 1 (PER ORA NON SI GESTISCE IL CASO SE ENTRA NEL PRE ALERT MA POI CI ESCE, QUINDI RILEVA UNO STEP COUNT E MANDA ERRONAMENTE L'ALERT)
-               isInThePreAlert=false;
-               while(!isInThePreAlert && deviceRssi > RSSI_THRESHOLD){
-               //rimane qui
-               }
-               //quando esce mandare ALERT
-               */
-
-              // I check if the user is walking. I check also if he has performed too steps
-              //if(systemStepCount > last_step_count)
-              if((systemStepCount - last_step_count)/(deviceTimestamp - rilevation.getTimestamp()) < MAX_STEP_SPEED_THRESHOLD &&
-                      (systemStepCount - last_step_count)/(deviceTimestamp - rilevation.getTimestamp()) > MIN_STEP_SPEED_THRESHOLD){
-
-                //ALERT mettere metri dal possibile pericolo per vedere che si sta avvicinando sempre di più
-
-
-                //Aggiungo in array locale dell'applicazione così da supportare una possibile implentazione di un log/history
-                encountered_devs.add(device);
-                last_step_count = systemStepCount;
-              }
-            }
-            rilevation.setRssi(deviceRssi);
-            rilevation.setTimestamp(deviceTimestamp);
-          }
-        }
-        addRilevation(rilevation);
-      }
-      System.out.println("Timestamp: " + new Timestamp(System.currentTimeMillis()).toString() + ", " + device.toString());
-      statusText.setText(String.format("Total discovered devices: %d\n\nLast scanned device:\n%s", devicesCount, device.toString()));
-      stopBackgroundService();
-      startBackgroundService();
-    }
-  };
-
-  private void launchMainService() {
-
-    Intent svc = new Intent(this, MainService.class);
-
-    stopService(svc);
-    startService(svc);
-
-    //finish();
-  }
-
-
-
-
+  /**
   private double fromRSSItoMeters(int deviceRSSI){
     return Math.pow(10, (MEASURED_POWER-deviceRSSI)/(10*ENVIROMENT_FACTOR_CONSTANT));
-  }
+  }*/
 
   //for possible localhistory
   private void writeFileHistory(Context context) {
