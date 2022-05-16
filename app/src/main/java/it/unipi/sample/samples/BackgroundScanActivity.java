@@ -139,9 +139,6 @@ public class BackgroundScanActivity extends AppCompatActivity implements View.On
       TextView textView = (TextView) findViewById(R.id.step_counter_text);
       textView.setText(String.format("%d", systemStepCount));
 
-      TextView textView3 = (TextView) findViewById(R.id.debug_text_view2);
-      textView3.setText("TYPE_STEP_DETECTOR" + debugStepCounter++);
-
       isInThePreAlert = true;
     } else if(event.sensor.getType() == Sensor.TYPE_LINEAR_ACCELERATION) {
       fd.addToQueue(event);
@@ -150,15 +147,11 @@ public class BackgroundScanActivity extends AppCompatActivity implements View.On
 
   @Override
   public void onAccuracyChanged(Sensor sensor, int accuracy) {
-    TextView textView = (TextView) findViewById(R.id.debug_text_view);
-    textView.setText("ON_ACCURACY_CHANGED");
     Log.i(TAG, "Accuracy changed");
   }
 
   @Override
   protected void onPause() {
-    TextView textView = (TextView) findViewById(R.id.debug_text_view);
-    textView.setText("ON_PAUSE");
     unregisterReceiver(scanningBroadcastReceiver);
     super.onPause();
     sm.unregisterListener(this);
@@ -166,16 +159,11 @@ public class BackgroundScanActivity extends AppCompatActivity implements View.On
 
   @Override
   public void onPointerCaptureChanged(boolean hasCapture) {
-    TextView textView = (TextView) findViewById(R.id.debug_text_view);
-    textView.setText("ON_POINTERCAPTURECHANGED");
     super.onPointerCaptureChanged(hasCapture);
   }
 
   @Override
   protected void onResume() {
-    TextView textView = (TextView) findViewById(R.id.debug_text_view);
-    textView.setText("ON_RESUME");
-
     super.onResume();
     //Register Broadcast receiver that will accept results from background scanning
     IntentFilter intentFilter = new IntentFilter(BackgroundScanService.ACTION_DEVICE_DISCOVERED);

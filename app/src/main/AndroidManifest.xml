@@ -24,7 +24,6 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme">
         <activity android:name="it.unipi.sample.samples.KontaktCloudWithCoroutinesActivity"></activity>
-        <activity android:name="it.unipi.sample.samples.android_8_screen_pause.AndroidAbove8ScanWithPausedScreen" />
         <activity android:name="it.unipi.sample.samples.beam.PortalBeamImageActivity" /> <!-- Activities -->
         <activity
             android:name="it.unipi.sample.MainActivity"
@@ -37,41 +36,15 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="it.unipi.sample.samples.BeaconEddystoneScanActivity"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name="it.unipi.sample.samples.BeaconProScanActivity"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name="it.unipi.sample.samples.ScanRegionsActivity"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name="it.unipi.sample.samples.ScanFiltersActivity"
-            android:screenOrientation="portrait" />
-        <activity
             android:name="it.unipi.sample.samples.BackgroundScanActivity"
             android:screenOrientation="portrait" />
-        <activity
-            android:name="it.unipi.sample.samples.BeaconConfigurationActivity"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name="it.unipi.sample.samples.BeaconProSensorsActivity"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name="it.unipi.sample.samples.KontaktCloudActivity"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name="it.unipi.sample.samples.ForegroundScanActivity"
-            android:screenOrientation="portrait" /> <!-- Services -->
+        <!-- Services -->
         <service
             android:name="com.kontakt.sdk.android.ble.service.ProximityService"
             android:exported="false" />
         <service
             android:name="it.unipi.sample.service.BackgroundScanService"
             android:enabled="true"
-            android:exported="false" />
-        <service
-            android:name="it.unipi.sample.service.ForegroundScanService"
             android:exported="false" />
         <service
             android:name="it.unipi.sample.samples.android_8_screen_pause.ShowNotificationService"
