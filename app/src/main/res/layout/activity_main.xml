@@ -53,6 +53,7 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="4dp"
         android:text="Background Scanning"
+        android:background="@drawable/custom_button"
         />
 
     <androidx.appcompat.widget.AppCompatButton

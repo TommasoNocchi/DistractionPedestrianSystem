@@ -4,12 +4,19 @@
     <option name="filePathToZoomLevelMap">
       <map>
         <entry key="..\:/Users/Admin/AndroidStudioProjects/DistractionPedestrianSystem/app/src/main/res/drawable-v24/dashed_border.xml" value="0.3055" />
+        <entry key="..\:/Users/Admin/AndroidStudioProjects/DistractionPedestrianSystem/app/src/main/res/drawable-v24/ic_android_black_24dp.xml" value="0.1" />
         <entry key="..\:/Users/Admin/AndroidStudioProjects/DistractionPedestrianSystem/app/src/main/res/drawable-v24/ic_launcher_background.xml" value="0.1" />
         <entry key="..\:/Users/Admin/AndroidStudioProjects/DistractionPedestrianSystem/app/src/main/res/drawable/ic_launcher_background.xml" value="0.3055" />
         <entry key="..\:/Users/Admin/AndroidStudioProjects/DistractionPedestrianSystem/app/src/main/res/layout/activity_android_above8_scan_with_paused_screen.xml" value="0.15703125" />
-        <entry key="..\:/Users/Admin/AndroidStudioProjects/DistractionPedestrianSystem/app/src/main/res/layout/activity_background_scan.xml" value="0.2695035460992908" />
-        <entry key="..\:/Users/Admin/AndroidStudioProjects/DistractionPedestrianSystem/app/src/main/res/layout/activity_main.xml" value="0.2695035460992908" />
+        <entry key="..\:/Users/Admin/AndroidStudioProjects/DistractionPedestrianSystem/app/src/main/res/layout/activity_background_scan.xml" value="0.5142857142857143" />
+        <entry key="..\:/Users/Admin/AndroidStudioProjects/DistractionPedestrianSystem/app/src/main/res/layout/activity_beacon_eddystone_scan.xml" value="0.33958333333333335" />
+        <entry key="..\:/Users/Admin/AndroidStudioProjects/DistractionPedestrianSystem/app/src/main/res/layout/activity_kontakt_cloud.xml" value="0.33958333333333335" />
+        <entry key="..\:/Users/Admin/AndroidStudioProjects/DistractionPedestrianSystem/app/src/main/res/layout/activity_main.xml" value="0.42857142857142855" />
         <entry key="..\:/Users/Admin/AndroidStudioProjects/DistractionPedestrianSystem/app/src/main/res/layout/activity_main_original.xml" value="0.24518743667679838" />
+        <entry key="..\:/Users/Admin/AndroidStudioProjects/DistractionPedestrianSystem/app/src/main/res/layout/activity_regions.xml" value="0.33958333333333335" />
+        <entry key="..\:/Users/Admin/AndroidStudioProjects/DistractionPedestrianSystem/app/src/main/res/layout/custom_button.xml" value="0.2712765957446808" />
+        <entry key="..\:/Users/Admin/AndroidStudioProjects/DistractionPedestrianSystem/app/src/main/res/layout/floating_view.xml" value="0.33958333333333335" />
+        <entry key="..\:/Users/Admin/AndroidStudioProjects/DistractionPedestrianSystem/app/src/main/res/layout/toolbar.xml" value="0.33958333333333335" />
         <entry key="..\:/Users/Admin/AndroidStudioProjects/DistractionPedestrianSystem/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml" value="0.301" />
         <entry key="..\:/Users/Admin/AndroidStudioProjects/DistractionPedestrianSystem/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml" value="0.1" />
         <entry key="..\:/Users/Simone/AndroidStudioProjects/DistractionPedestrianSystem2/app/src/main/res/drawable-v24/ic_android_black_24dp.xml" value="0.1" />

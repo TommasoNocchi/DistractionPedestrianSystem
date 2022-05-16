@@ -7,9 +7,10 @@
   tools:ignore="Overdraw">
 
   <ImageView
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:contentDescription="alert_image"
-    android:src="@drawable/ic_android_black_24dp" />
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:background="#E31717"
+      android:contentDescription="alert_image"
+      android:src="@drawable/alert" />
 
 </FrameLayout>
