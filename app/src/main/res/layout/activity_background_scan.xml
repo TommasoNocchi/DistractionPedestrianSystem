@@ -28,9 +28,8 @@
       android:id="@+id/stop_scan_button"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
-      android:text="@string/stop_scanning_service"
       android:background="@drawable/custom_button"
-      />
+      android:text="@string/stop_scanning_service" />
 
   <ProgressBar
       android:id="@+id/scanning_progress"

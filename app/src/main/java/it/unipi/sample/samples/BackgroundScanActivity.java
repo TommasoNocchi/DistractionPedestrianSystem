@@ -121,12 +121,10 @@ public class BackgroundScanActivity extends AppCompatActivity implements View.On
 
   private void sensorSetup(){
     sm = (SensorManager)getSystemService(SENSOR_SERVICE);
-    s1 = sm.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
     s2 = sm.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR);
     if(s1 == null || s2 == null)
     {
       Log.d(TAG, "Sensor(s) unavailable");
-      finish();
     }
   }
 
