@@ -67,12 +67,12 @@ public class BackgroundScanActivity extends AppCompatActivity implements View.On
   private boolean firstRilevation = true;
 
   // steps by second thresholds
-  private double MIN_STEP_SPEED_THRESHOLD = 2;
+  private double MIN_STEP_SPEED_THRESHOLD = 0.5;
   private double MAX_STEP_SPEED_THRESHOLD = 10;
-  private int RSSI_THRESHOLD = -100;
+  private int RSSI_THRESHOLD = -80;
   // user speed thresholds
-  private double MIN_USER_SPEED_THRESHOLD = 5;
-  private double MAX_USER_SPEED_THRESHOLD = 20;
+  private double MIN_USER_SPEED_THRESHOLD = 2;
+  private double MAX_USER_SPEED_THRESHOLD = 35;
   private int MEASURED_POWER = -69;
   private int ENVIROMENT_FACTOR_CONSTANT = 2; //Range 2-4: 2 = Low-strength
 
@@ -81,7 +81,7 @@ public class BackgroundScanActivity extends AppCompatActivity implements View.On
   private ArrayList<Rilevation> lastRilevations;
 
   private static Context context;
-  private ArrayList<RemoteBluetoothDevice> encountered_devs = new ArrayList<>(); // DA DECIDERE
+  private ArrayList<RemoteBluetoothDevice> encountered_devs = new ArrayList<>();
   @SuppressLint("NewApi")
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -115,6 +115,8 @@ public class BackgroundScanActivity extends AppCompatActivity implements View.On
     textView.setText("ON_CREATE");
 
     launchMainService();
+
+    //readFromFile(context);
   }
 
   private void sensorSetup(){
@@ -128,15 +130,14 @@ public class BackgroundScanActivity extends AppCompatActivity implements View.On
     }
   }
 
+
+
   @Override
   public void onSensorChanged(SensorEvent event) {
     if(event.sensor.getType() == Sensor.TYPE_STEP_DETECTOR) {
       systemStepCount++;
       TextView textView = (TextView) findViewById(R.id.step_counter_text);
       textView.setText(String.format("%d", systemStepCount));
-
-      TextView textView3 = (TextView) findViewById(R.id.debug_text_view2);
-      textView3.setText("TYPE_STEP_DETECTOR" + debugStepCounter++);
 
       isInThePreAlert = true;
     } else if(event.sensor.getType() == Sensor.TYPE_LINEAR_ACCELERATION) {
@@ -146,15 +147,11 @@ public class BackgroundScanActivity extends AppCompatActivity implements View.On
 
   @Override
   public void onAccuracyChanged(Sensor sensor, int accuracy) {
-    TextView textView = (TextView) findViewById(R.id.debug_text_view);
-    textView.setText("ON_ACCURACY_CHANGED");
     Log.i(TAG, "Accuracy changed");
   }
 
   @Override
   protected void onPause() {
-    TextView textView = (TextView) findViewById(R.id.debug_text_view);
-    textView.setText("ON_PAUSE");
     unregisterReceiver(scanningBroadcastReceiver);
     super.onPause();
     sm.unregisterListener(this);
@@ -162,16 +159,11 @@ public class BackgroundScanActivity extends AppCompatActivity implements View.On
 
   @Override
   public void onPointerCaptureChanged(boolean hasCapture) {
-    TextView textView = (TextView) findViewById(R.id.debug_text_view);
-    textView.setText("ON_POINTERCAPTURECHANGED");
     super.onPointerCaptureChanged(hasCapture);
   }
 
   @Override
   protected void onResume() {
-    TextView textView = (TextView) findViewById(R.id.debug_text_view);
-    textView.setText("ON_RESUME");
-
     super.onResume();
     //Register Broadcast receiver that will accept results from background scanning
     IntentFilter intentFilter = new IntentFilter(BackgroundScanService.ACTION_DEVICE_DISCOVERED);
@@ -274,6 +266,14 @@ public class BackgroundScanActivity extends AppCompatActivity implements View.On
     return false;
   }*/
 
+  @Override
+  public void onDestroy() {
+    super.onDestroy();
+
+    writeFileHistory(context);
+  }
+
+
   private void addRilevation(Rilevation newRilevation){
     Rilevation rilevation;
     for(int i=0; i<lastRilevations.size(); i++){
@@ -320,37 +320,45 @@ public class BackgroundScanActivity extends AppCompatActivity implements View.On
       }
       else{
         rilevation = getRilevation(device.getUniqueId());
-        // I check if new device is nearest wrt last one. I check also if the speed is too high,
-        // in such case there was an error in the rilevation
-        if((deviceRssi - rilevation.getRssi())/(deviceTimestamp - rilevation.getTimestamp()) < MIN_USER_SPEED_THRESHOLD &&
-              (deviceRssi - rilevation.getRssi())/(deviceTimestamp - rilevation.getTimestamp()) > MAX_USER_SPEED_THRESHOLD){ //(FORSE si può levare perch* c'è): ASCOLTARE AUDIO MINUTO 19:00 13/05/22 CHE MOTIVA DI TENERE QUESTO IF
-          // I check if new device is too near
-          if(deviceRssi > RSSI_THRESHOLD){ //PRE-ALERT
+        if(rilevation == null)
+          rilevation = new Rilevation(device.getUniqueId(), device.getRssi(), device.getTimestamp());
 
-            /**
-            //Soluzione 1 (PER ORA NON SI GESTISCE IL CASO SE ENTRA NEL PRE ALERT MA POI CI ESCE, QUINDI RILEVA UNO STEP COUNT E MANDA ERRONAMENTE L'ALERT)
-            isInThePreAlert=false;
-            while(!isInThePreAlert && deviceRssi > RSSI_THRESHOLD){
-              //rimane qui
+        else
+        {
+          // I check if new device is nearest wrt last one. I check also if the speed is too high,
+          // in such case there was an error in the rilevation
+          //if(deviceRssi > lastRSSI) --> if(deviceRssi - lastRssi > SOGLIA)
+          if((deviceRssi - rilevation.getRssi())/(deviceTimestamp - rilevation.getTimestamp()) > MIN_USER_SPEED_THRESHOLD &&
+                  (deviceRssi - rilevation.getRssi())/(deviceTimestamp - rilevation.getTimestamp()) < MAX_USER_SPEED_THRESHOLD){ //(FORSE si può levare perch* c'è): ASCOLTARE AUDIO MINUTO 19:00 13/05/22 CHE MOTIVA DI TENERE QUESTO IF
+            // I check if new device is too near
+            if(deviceRssi > RSSI_THRESHOLD){ //PRE-ALERT
+              /**
+               //Soluzione 1 (PER ORA NON SI GESTISCE IL CASO SE ENTRA NEL PRE ALERT MA POI CI ESCE, QUINDI RILEVA UNO STEP COUNT E MANDA ERRONAMENTE L'ALERT)
+               isInThePreAlert=false;
+               while(!isInThePreAlert && deviceRssi > RSSI_THRESHOLD){
+               //rimane qui
+               }
+               //quando esce mandare ALERT
+               */
+
+              // I check if the user is walking. I check also if he has performed too steps
+              //if(systemStepCount > last_step_count)
+              if((systemStepCount - last_step_count)/(deviceTimestamp - rilevation.getTimestamp()) < MAX_STEP_SPEED_THRESHOLD &&
+                      (systemStepCount - last_step_count)/(deviceTimestamp - rilevation.getTimestamp()) > MIN_STEP_SPEED_THRESHOLD){
+
+                //ALERT mettere metri dal possibile pericolo per vedere che si sta avvicinando sempre di più
+
+
+                //Aggiungo in array locale dell'applicazione così da supportare una possibile implentazione di un log/history
+                encountered_devs.add(device);
+                last_step_count = systemStepCount;
+              }
             }
-            //quando esce mandare ALERT
-            */
-
-            // I check if the user is walking. I check also if he has performed too steps, in such case
-            if((systemStepCount - last_step_count)/(deviceTimestamp - rilevation.getTimestamp()) < MAX_STEP_SPEED_THRESHOLD &&
-                    (systemStepCount - last_step_count)/(deviceTimestamp - rilevation.getTimestamp()) < MIN_STEP_SPEED_THRESHOLD){
-
-              //ALERT mettere metri dal possibile pericolo per vedere che si sta avvicinando sempre di più
-              
-              
-              //Aggiungo in array locale dell'applicazione così da supportare una possibile implentazione di un log/history
-              encountered_devs.add(device);
-              last_step_count = systemStepCount;
-            }
+            rilevation.setRssi(deviceRssi);
+            rilevation.setTimestamp(deviceTimestamp);
           }
-          rilevation.setRssi(deviceRssi);
-          rilevation.setTimestamp(deviceTimestamp);
         }
+        addRilevation(rilevation);
       }
       System.out.println("Timestamp: " + new Timestamp(System.currentTimeMillis()).toString() + ", " + device.toString());
       statusText.setText(String.format("Total discovered devices: %d\n\nLast scanned device:\n%s", devicesCount, device.toString()));

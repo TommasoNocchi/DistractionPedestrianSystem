@@ -1,21 +1,12 @@
 package it.unipi.sample;
 
 import android.Manifest;
-import android.app.KeyguardManager;
-import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
-import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
-import android.hardware.SensorManager;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
@@ -25,7 +16,6 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -38,26 +28,6 @@ import androidx.core.content.ContextCompat;
 import com.kontakt.sample.R;
 
 import it.unipi.sample.samples.BackgroundScanActivity;
-import it.unipi.sample.samples.BeaconConfigurationActivity;
-import it.unipi.sample.samples.BeaconEddystoneScanActivity;
-import it.unipi.sample.samples.BeaconProScanActivity;
-import it.unipi.sample.samples.BeaconProSensorsActivity;
-import it.unipi.sample.samples.ForegroundScanActivity;
-import it.unipi.sample.samples.KontaktCloudActivity;
-import it.unipi.sample.samples.ScanFiltersActivity;
-import it.unipi.sample.samples.ScanRegionsActivity;
-import it.unipi.sample.samples.android_8_screen_pause.AndroidAbove8ScanWithPausedScreen;
-import it.unipi.sample.service.MainService;
-
-import com.androidplot.xy.LineAndPointFormatter;
-import com.androidplot.xy.SimpleXYSeries;
-import com.androidplot.xy.XYPlot;
-import com.androidplot.xy.XYSeries;
-
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.List;
-import java.util.SortedMap;
 
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
@@ -107,31 +77,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
   private void setupButtons() {
     buttonsLayout = findViewById(R.id.buttons_layout);
 
-    final Button beaconsScanningButton = findViewById(R.id.button_scan_beacons);
-    final Button beaconsProScanningButton = findViewById(R.id.button_scan_beacons_pro);
-    final Button scanRegionsButton = findViewById(R.id.button_scan_regions);
-    final Button scanFiltersButton = findViewById(R.id.button_scan_filters);
     final Button backgroundScanButton = findViewById(R.id.button_scan_background);
-    final Button foregroundScanButton = findViewById(R.id.button_scan_foreground);
-    final Button configurationButton = findViewById(R.id.button_beacon_config);
-    final Button beaconProSensorsButton = findViewById(R.id.button_beacon_pro_sensors);
-    final Button kontaktCloudButton = findViewById(R.id.button_kontakt_cloud);
-    final Button beamImageButton = findViewById(R.id.button_beam_image);
-    final Button pausedScreenScanButton = findViewById(R.id.button_scan_with_paused_screen);
-    final Button kontaktCloudWithCoroutinesButton = findViewById(R.id.button_kontakt_cloud_with_coroutines);
 
-    beaconsScanningButton.setOnClickListener(this);
-    beaconsProScanningButton.setOnClickListener(this);
-    scanRegionsButton.setOnClickListener(this);
-    scanFiltersButton.setOnClickListener(this);
     backgroundScanButton.setOnClickListener(this);
-    foregroundScanButton.setOnClickListener(this);
-    configurationButton.setOnClickListener(this);
-    beaconProSensorsButton.setOnClickListener(this);
-    kontaktCloudButton.setOnClickListener(this);
-    beamImageButton.setOnClickListener(this);
-    pausedScreenScanButton.setOnClickListener(this);
-    kontaktCloudWithCoroutinesButton.setOnClickListener(this);
   }
 
   //Since Android Marshmallow starting a Bluetooth Low Energy scan requires permission from location group.
@@ -180,35 +128,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
   @Override
   public void onClick(View view) {
     switch (view.getId()) {
-      case R.id.button_scan_beacons:
-        startActivity(BeaconEddystoneScanActivity.createIntent(this));
-        break;
-      case R.id.button_scan_beacons_pro:
-        startActivity(BeaconProScanActivity.createIntent(this));
-        break;
-      case R.id.button_scan_filters:
-        startActivity(ScanFiltersActivity.createIntent(this));
-        break;
-      case R.id.button_scan_regions:
-        startActivity(ScanRegionsActivity.createIntent(this));
-        break;
       case R.id.button_scan_background:
         startActivity(BackgroundScanActivity.createIntent(this));
-        break;
-      case R.id.button_scan_foreground:
-        startActivity(ForegroundScanActivity.createIntent(this));
-        break;
-      case R.id.button_beacon_config:
-        startActivity(BeaconConfigurationActivity.createIntent(this));
-        break;
-      case R.id.button_beacon_pro_sensors:
-        startActivity(BeaconProSensorsActivity.createIntent(this));
-        break;
-      case R.id.button_kontakt_cloud:
-        startActivity(KontaktCloudActivity.createIntent(this));
-        break;
-      case R.id.button_scan_with_paused_screen:
-        startActivity(AndroidAbove8ScanWithPausedScreen.createIntent(this));
         break;
     }
   }
