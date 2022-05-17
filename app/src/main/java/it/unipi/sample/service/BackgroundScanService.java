@@ -34,6 +34,7 @@ import com.kontakt.sdk.android.common.profile.RemoteBluetoothDevice;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import it.unipi.sample.samples.common.Rilevation;
@@ -155,6 +156,14 @@ public class BackgroundScanService extends Service implements SensorEventListene
         onDeviceDiscovered(ibeacon);
         Log.i(TAG, "onIBeaconDiscovered: " + ibeacon.toString());
       }
+
+      @Override
+      public void onIBeaconsUpdated(List<IBeaconDevice> iBeacons, IBeaconRegion region) { //function to detect the update of the beacon
+        for(IBeaconDevice ib: iBeacons){
+          onDeviceDiscovered(ib);
+        }
+        Log.i(TAG, "onIBeaconsUpdated: " + iBeacons.size());
+      }
     };
   }
 
@@ -171,21 +180,24 @@ public class BackgroundScanService extends Service implements SensorEventListene
   private void onDeviceDiscovered(RemoteBluetoothDevice device) {
     devicesCount++;
     //Send a broadcast with discovered device
-    /**Intent intent = new Intent();
+    /*Intent intent = new Intent();
     intent.setAction(ACTION_DEVICE_DISCOVERED);
     intent.putExtra(EXTRA_DEVICE, device);
     intent.putExtra(EXTRA_DEVICES_COUNT, devicesCount);
-    sendBroadcast(intent);*/
-    detectAlert(device);
+    sendBroadcast(intent);
+    */
 
 
+    detectAlert2(device);
+
+    /*
     if (proximityManager != null) {
       proximityManager.disconnect();
       //stopSelf();
       proximityManager = null;
     }
     setupProximityManager();
-    startScanning();
+    startScanning();*/
     /*onDestroy();
     onCreate();*/
   }
@@ -260,6 +272,10 @@ public class BackgroundScanService extends Service implements SensorEventListene
         return rilevation;
     }
     return null;
+  }
+
+  private void detectAlert2(RemoteBluetoothDevice device){
+    System.out.println("Timestamp: " + new Timestamp(System.currentTimeMillis()).toString() + ", " + device.toString());
   }
 
   private void detectAlert(RemoteBluetoothDevice device){
