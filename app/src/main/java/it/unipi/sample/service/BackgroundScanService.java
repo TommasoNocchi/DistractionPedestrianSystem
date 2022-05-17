@@ -32,6 +32,7 @@ import com.kontakt.sdk.android.common.profile.IEddystoneDevice;
 import com.kontakt.sdk.android.common.profile.IEddystoneNamespace;
 import com.kontakt.sdk.android.common.profile.RemoteBluetoothDevice;
 
+import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
@@ -65,12 +66,12 @@ public class BackgroundScanService extends Service implements SensorEventListene
   private boolean firstRilevation = true;
 
   // steps by second thresholds
-  private double MIN_STEP_SPEED_THRESHOLD = 0.5;
-  private double MAX_STEP_SPEED_THRESHOLD = 10;
+  private double MIN_STEP_SPEED_THRESHOLD = 0.5/1000;
+  private double MAX_STEP_SPEED_THRESHOLD = 10/1000;
   private int RSSI_THRESHOLD = -80;
   // user speed thresholds
-  private double MIN_USER_SPEED_THRESHOLD = 2;
-  private double MAX_USER_SPEED_THRESHOLD = 35;
+  private double MIN_USER_SPEED_THRESHOLD = 2/1000;
+  private double MAX_USER_SPEED_THRESHOLD = 35/1000;
   private int MEASURED_POWER = -69;
   private int ENVIROMENT_FACTOR_CONSTANT = 2; //Range 2-4: 2 = Low-strength
 
@@ -188,7 +189,7 @@ public class BackgroundScanService extends Service implements SensorEventListene
     */
 
 
-    detectAlert2(device);
+    detectAlert(device);
 
     /*
     if (proximityManager != null) {
@@ -241,6 +242,7 @@ public class BackgroundScanService extends Service implements SensorEventListene
 
   @Override
   public void onSensorChanged(SensorEvent event) {
+    System.out.println("Here in onSensorChanged");
     if(event.sensor.getType() == Sensor.TYPE_STEP_DETECTOR) {
       systemStepCount++;
       /**TextView textView = (TextView) findViewById(R.id.step_counter_text);
@@ -274,9 +276,7 @@ public class BackgroundScanService extends Service implements SensorEventListene
     return null;
   }
 
-  private void detectAlert2(RemoteBluetoothDevice device){
-    System.out.println("Timestamp: " + new Timestamp(System.currentTimeMillis()).toString() + ", " + device.toString());
-  }
+
 
   private void detectAlert(RemoteBluetoothDevice device){
     int deviceRssi = device.getRssi();
@@ -298,6 +298,12 @@ public class BackgroundScanService extends Service implements SensorEventListene
         // I check if new device is nearest wrt last one. I check also if the speed is too high,
         // in such case there was an error in the rilevation
         //if(deviceRssi > lastRSSI) --> if(deviceRssi - lastRssi > SOGLIA)
+        System.out.println("System state --> currentRssi: " + deviceRssi + ", lastRssi: " + rilevation.getRssi() + ", currentTimestamp: " +
+                deviceTimestamp + ", lastTimestamp: " + rilevation.getTimestamp() + "interval(seconds): "
+                + TimeUnit.MILLISECONDS.toSeconds(deviceTimestamp - rilevation.getTimestamp()) + "interval(millis): "
+                + TimeUnit.MILLISECONDS.toMillis(deviceTimestamp - rilevation.getTimestamp()) + ", currentStepCount: "
+                + systemStepCount + ", lastStepCount: " + last_step_count);
+
         if((deviceRssi - rilevation.getRssi())/(deviceTimestamp - rilevation.getTimestamp()) > MIN_USER_SPEED_THRESHOLD &&
                 (deviceRssi - rilevation.getRssi())/(deviceTimestamp - rilevation.getTimestamp()) < MAX_USER_SPEED_THRESHOLD){ //(FORSE si può levare perch* c'è): ASCOLTARE AUDIO MINUTO 19:00 13/05/22 CHE MOTIVA DI TENERE QUESTO IF
           // I check if new device is too near
@@ -321,12 +327,13 @@ public class BackgroundScanService extends Service implements SensorEventListene
 
               //Aggiungo in array locale dell'applicazione così da supportare una possibile implentazione di un log/history
               encountered_devs.add(device);
-              last_step_count = systemStepCount;
+              //last_step_count = systemStepCount;
             }
           }
-          rilevation.setRssi(deviceRssi);
-          rilevation.setTimestamp(deviceTimestamp);
         }
+        rilevation.setRssi(deviceRssi);
+        rilevation.setTimestamp(deviceTimestamp);
+        last_step_count = systemStepCount;
       }
       addRilevation(rilevation);
     }
@@ -335,7 +342,6 @@ public class BackgroundScanService extends Service implements SensorEventListene
   }
 
   private void launchMainService() {
-
     Intent svc = new Intent(this, MainService.class);
 
     stopService(svc);
@@ -343,4 +349,6 @@ public class BackgroundScanService extends Service implements SensorEventListene
 
     //finish();
   }
+
+
 }

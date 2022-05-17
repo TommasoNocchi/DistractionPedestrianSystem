@@ -13,4 +13,11 @@
       android:contentDescription="alert_image"
       android:src="@drawable/alert" />
 
+  <TextView
+      android:id="@+id/textView"
+      android:layout_width="149dp"
+      android:layout_height="74dp"
+      android:text="TextView"
+      android:textSize="34sp" />
+
 </FrameLayout>
