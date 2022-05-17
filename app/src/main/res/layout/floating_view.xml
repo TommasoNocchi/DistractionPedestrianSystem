@@ -15,9 +15,10 @@
 
   <TextView
       android:id="@+id/textView"
-      android:layout_width="149dp"
+      android:layout_width="match_parent"
       android:layout_height="74dp"
-      android:text="TextView"
-      android:textSize="34sp" />
+      android:foregroundTint="#F6F0F0"
+      android:text="Pay attention to the surrounding environment"
+      android:textSize="20sp" />
 
 </FrameLayout>

@@ -1,5 +1,8 @@
 package it.unipi.sample.service;
 
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -9,12 +12,16 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.media.RingtoneManager;
+import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.core.app.NotificationCompat;
 
 import com.kontakt.sample.R;
 import com.kontakt.sdk.android.ble.configuration.ScanMode;
@@ -38,6 +45,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import it.unipi.sample.MainActivity;
 import it.unipi.sample.samples.common.Rilevation;
 
 public class BackgroundScanService extends Service implements SensorEventListener {
@@ -308,14 +316,10 @@ public class BackgroundScanService extends Service implements SensorEventListene
                 (deviceRssi - rilevation.getRssi())/(deviceTimestamp - rilevation.getTimestamp()) < MAX_USER_SPEED_THRESHOLD){ //(FORSE si può levare perch* c'è): ASCOLTARE AUDIO MINUTO 19:00 13/05/22 CHE MOTIVA DI TENERE QUESTO IF
           // I check if new device is too near
           if(deviceRssi > RSSI_THRESHOLD){ //PRE-ALERT
-            /**
-             //Soluzione 1 (PER ORA NON SI GESTISCE IL CASO SE ENTRA NEL PRE ALERT MA POI CI ESCE, QUINDI RILEVA UNO STEP COUNT E MANDA ERRONAMENTE L'ALERT)
-             isInThePreAlert=false;
-             while(!isInThePreAlert && deviceRssi > RSSI_THRESHOLD){
-             //rimane qui
-             }
-             //quando esce mandare ALERT
-             */
+
+            int reqCode = 1;
+            Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+            showNotification(this, "Title", "Pay attention to the surrounding environment", intent, reqCode);
 
             // I check if the user is walking. I check also if he has performed too steps
             //if(systemStepCount > last_step_count)
@@ -350,5 +354,29 @@ public class BackgroundScanService extends Service implements SensorEventListene
     //finish();
   }
 
+  public void showNotification(Context context, String title, String message, Intent intent, int reqCode) {
+
+    PendingIntent pendingIntent = PendingIntent.getActivity(context, reqCode, intent, PendingIntent.FLAG_IMMUTABLE);
+    String CHANNEL_ID = "channel_name";// The id of the channel.
+    NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(context, CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_launcher_background)
+            .setContentTitle(title)
+            .setContentText(message)
+            .setOngoing(true)
+            .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION))
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setCategory(NotificationCompat.CATEGORY_CALL)
+            .setContentIntent(pendingIntent);
+    NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+      CharSequence name = "Channel Name";// The user-visible name of the channel.
+      int importance = NotificationManager.IMPORTANCE_HIGH;
+      NotificationChannel mChannel = new NotificationChannel(CHANNEL_ID, name, importance);
+      notificationManager.createNotificationChannel(mChannel);
+    }
+    notificationManager.notify(reqCode, notificationBuilder.build()); // 0 is the request code, it should be unique id
+
+    Log.d("showNotification", "showNotification: " + reqCode);
+  }
 
 }

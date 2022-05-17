@@ -44,32 +44,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     checkPermissions();
     int reqCode = 1;
     Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-    showNotification(this, "Title", "SEI IN PERICOLO!!!!!", intent, reqCode);
-  }
-
-  public void showNotification(Context context, String title, String message, Intent intent, int reqCode) {
-
-    PendingIntent pendingIntent = PendingIntent.getActivity(context, reqCode, intent, PendingIntent.FLAG_IMMUTABLE);
-    String CHANNEL_ID = "channel_name";// The id of the channel.
-    NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(context, CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_launcher_background)
-            .setContentTitle(title)
-            .setContentText(message)
-            .setOngoing(true)
-            .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION))
-            .setPriority(NotificationCompat.PRIORITY_HIGH)
-            .setCategory(NotificationCompat.CATEGORY_CALL)
-            .setContentIntent(pendingIntent);
-    NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-      CharSequence name = "Channel Name";// The user-visible name of the channel.
-      int importance = NotificationManager.IMPORTANCE_HIGH;
-      NotificationChannel mChannel = new NotificationChannel(CHANNEL_ID, name, importance);
-      notificationManager.createNotificationChannel(mChannel);
-    }
-    notificationManager.notify(reqCode, notificationBuilder.build()); // 0 is the request code, it should be unique id
-
-    Log.d("showNotification", "showNotification: " + reqCode);
   }
 
 
