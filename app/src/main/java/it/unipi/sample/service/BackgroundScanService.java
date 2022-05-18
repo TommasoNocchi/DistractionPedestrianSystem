@@ -84,7 +84,7 @@ public class BackgroundScanService extends Service implements SensorEventListene
   private int ENVIROMENT_FACTOR_CONSTANT = 2; //Range 2-4: 2 = Low-strength
 
   private boolean isInThePreAlert = false;
-  private int last_step_count;
+  private int lastStepCount;
   private ArrayList<Rilevation> lastRilevations;
   private ArrayList<RemoteBluetoothDevice> encountered_devs = new ArrayList<>();
 
@@ -145,17 +145,6 @@ public class BackgroundScanService extends Service implements SensorEventListene
         //Toast.makeText(BackgroundScanService.this, "Scanning service started.", Toast.LENGTH_SHORT).show();
       }
     });
-    //stopAfterDelay();
-  }
-
-  private void stopAfterDelay() {
-    handler.postDelayed(new Runnable() {
-      @Override
-      public void run() {
-        proximityManager.disconnect();
-        stopSelf();
-      }
-    }, TIMEOUT);
   }
 
   private IBeaconListener createIBeaconListener() {
@@ -188,27 +177,7 @@ public class BackgroundScanService extends Service implements SensorEventListene
 
   private void onDeviceDiscovered(RemoteBluetoothDevice device) {
     devicesCount++;
-    //Send a broadcast with discovered device
-    /*Intent intent = new Intent();
-    intent.setAction(ACTION_DEVICE_DISCOVERED);
-    intent.putExtra(EXTRA_DEVICE, device);
-    intent.putExtra(EXTRA_DEVICES_COUNT, devicesCount);
-    sendBroadcast(intent);
-    */
-
-
     detectAlert(device);
-
-    /*
-    if (proximityManager != null) {
-      proximityManager.disconnect();
-      //stopSelf();
-      proximityManager = null;
-    }
-    setupProximityManager();
-    startScanning();*/
-    /*onDestroy();
-    onCreate();*/
   }
 
   @Override
@@ -221,15 +190,6 @@ public class BackgroundScanService extends Service implements SensorEventListene
     //Toast.makeText(BackgroundScanService.this, "Scanning service stopped.", Toast.LENGTH_SHORT).show();
     super.onDestroy();
   }
-
-  /**
-  @Override
-  protected void onResume() {
-    super.onResume();
-
-    sm.registerListener(this, s1, SensorManager.SENSOR_DELAY_GAME);
-    sm.registerListener(this, s2, SensorManager.SENSOR_DELAY_GAME);
-  }*/
 
   @Override
   public void onAccuracyChanged(Sensor sensor, int accuracy) {
@@ -253,9 +213,6 @@ public class BackgroundScanService extends Service implements SensorEventListene
     System.out.println("Here in onSensorChanged");
     if(event.sensor.getType() == Sensor.TYPE_STEP_DETECTOR) {
       systemStepCount++;
-      /**TextView textView = (TextView) findViewById(R.id.step_counter_text);
-      textView.setText(String.format("%d", systemStepCount));*/
-
       isInThePreAlert = true;
       System.out.println("StepCount value: "+systemStepCount);
     }
@@ -294,7 +251,7 @@ public class BackgroundScanService extends Service implements SensorEventListene
       firstRilevation = false;
       rilevation = new Rilevation(device.getUniqueId(), device.getRssi(), device.getTimestamp());
       lastRilevations.add(rilevation);
-      last_step_count = systemStepCount;
+      lastStepCount = systemStepCount;
     }
     else{
       rilevation = getRilevation(device.getUniqueId());
@@ -310,10 +267,10 @@ public class BackgroundScanService extends Service implements SensorEventListene
                 deviceTimestamp + ", lastTimestamp: " + rilevation.getTimestamp() + "interval(seconds): "
                 + TimeUnit.MILLISECONDS.toSeconds(deviceTimestamp - rilevation.getTimestamp()) + "interval(millis): "
                 + TimeUnit.MILLISECONDS.toMillis(deviceTimestamp - rilevation.getTimestamp()) + ", currentStepCount: "
-                + systemStepCount + ", lastStepCount: " + last_step_count);
+                + systemStepCount + ", lastStepCount: " + lastStepCount);
 
         if((deviceRssi - rilevation.getRssi())/(deviceTimestamp - rilevation.getTimestamp()) > MIN_USER_SPEED_THRESHOLD &&
-                (deviceRssi - rilevation.getRssi())/(deviceTimestamp - rilevation.getTimestamp()) < MAX_USER_SPEED_THRESHOLD){ //(FORSE si può levare perch* c'è): ASCOLTARE AUDIO MINUTO 19:00 13/05/22 CHE MOTIVA DI TENERE QUESTO IF
+                (deviceRssi - rilevation.getRssi())/(deviceTimestamp - rilevation.getTimestamp()) < MAX_USER_SPEED_THRESHOLD){ //to prevent erroneous measurements made by the Beacon sensor
           // I check if new device is too near
           if(deviceRssi > RSSI_THRESHOLD){ //PRE-ALERT
 
@@ -322,22 +279,22 @@ public class BackgroundScanService extends Service implements SensorEventListene
             showNotification(this, "Title", "Pay attention to the surrounding environment", intent, reqCode);
 
             // I check if the user is walking. I check also if he has performed too steps
-            //if(systemStepCount > last_step_count)
-            if((systemStepCount - last_step_count)/(deviceTimestamp - rilevation.getTimestamp()) < MAX_STEP_SPEED_THRESHOLD &&
-                    (systemStepCount - last_step_count)/(deviceTimestamp - rilevation.getTimestamp()) > MIN_STEP_SPEED_THRESHOLD){
+            //if(systemStepCount > lastStepCount)
+            if((systemStepCount - lastStepCount)/(deviceTimestamp - rilevation.getTimestamp()) < MAX_STEP_SPEED_THRESHOLD &&
+                    (systemStepCount - lastStepCount)/(deviceTimestamp - rilevation.getTimestamp()) > MIN_STEP_SPEED_THRESHOLD){
 
-              //ALERT mettere metri dal possibile pericolo per vedere che si sta avvicinando sempre di più
+              //ALERT 
               launchMainService();
 
               //Aggiungo in array locale dell'applicazione così da supportare una possibile implentazione di un log/history
               encountered_devs.add(device);
-              //last_step_count = systemStepCount;
+              //lastStepCount = systemStepCount;
             }
           }
         }
         rilevation.setRssi(deviceRssi);
         rilevation.setTimestamp(deviceTimestamp);
-        last_step_count = systemStepCount;
+        lastStepCount = systemStepCount;
       }
       addRilevation(rilevation);
     }
@@ -351,7 +308,6 @@ public class BackgroundScanService extends Service implements SensorEventListene
     stopService(svc);
     startService(svc);
 
-    //finish();
   }
 
   public void showNotification(Context context, String title, String message, Intent intent, int reqCode) {

@@ -8,10 +8,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
-import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
-import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
@@ -27,10 +23,7 @@ import androidx.core.content.ContextCompat;
 import com.androidplot.xy.XYPlot;
 import com.kontakt.sample.R;
 
-import it.unipi.sample.FilteredData;
-import it.unipi.sample.samples.common.Rilevation;
 import it.unipi.sample.service.BackgroundScanService;
-import it.unipi.sample.service.MainService;
 
 import com.kontakt.sdk.android.common.profile.RemoteBluetoothDevice;
 
@@ -40,7 +33,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 
 /**
@@ -57,8 +49,6 @@ public class BackgroundScanActivity extends AppCompatActivity implements View.On
 
 
   private static String TAG = "StepCounterExample";
-  private XYPlot plot;
-  private FilteredData fd;
 
   private static Context context;
   private ArrayList<RemoteBluetoothDevice> encountered_devs = new ArrayList<>();
@@ -151,7 +141,7 @@ public class BackgroundScanActivity extends AppCompatActivity implements View.On
   private void registerBroadcastReceiver() {
 
     final IntentFilter theFilter = new IntentFilter();
-    /** System Defined Broadcast */
+
     theFilter.addAction(Intent.ACTION_SCREEN_ON);
     theFilter.addAction(Intent.ACTION_SCREEN_OFF);
     theFilter.addAction(Intent.ACTION_USER_PRESENT);
@@ -172,29 +162,12 @@ public class BackgroundScanActivity extends AppCompatActivity implements View.On
           startBackgroundService();
         }
 
-        /*if(strAction.equals(Intent.ACTION_USER_PRESENT) && !myKM.isKeyguardLocked()){
-          System.out.println("Device locked");
-          stopBackgroundService();
-        }
-        else
-          System.out.println("Device unlocked");
-
-         */
-
       }
     };
 
     getApplicationContext().registerReceiver(screenOnOffReceiver, theFilter);
   }
 
-  /*private boolean isTheUserWalkingTowardsBeacon(long timestamp, int rssi){
-
-    double user_speed = (rssi - last_rssi)/(timestamp - last_timestamp);
-
-    if(user_speed > USER_SPEED_THRESHOLD)
-      return true;
-    return false;
-  }*/
 
   @Override
   public void onDestroy() {

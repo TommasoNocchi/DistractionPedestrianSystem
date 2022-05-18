@@ -17,10 +17,6 @@ import android.view.WindowManager.LayoutParams;
 import android.widget.FrameLayout;
 import com.kontakt.sample.R;
 
-/**
- * Created by matt on 08/08/2016.
- */
-
 public class MainService extends Service implements View.OnTouchListener {
 
   private static final String TAG = MainService.class.getSimpleName();

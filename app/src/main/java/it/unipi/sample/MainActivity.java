@@ -65,16 +65,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
       ActivityCompat.requestPermissions(this, requiredPermissions, REQUEST_CODE_PERMISSIONS);
     }
   }
-  /*
-  private void checkPermissions() {
-    String[] requiredPermissions = Build.VERSION.SDK_INT < Build.VERSION_CODES.S
-            ? new String[]{Manifest.permission.ACCESS_FINE_LOCATION}
-            : new String[]{ Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT, Manifest.permission.ACCESS_FINE_LOCATION };
-    if(isAnyOfPermissionsNotGranted(requiredPermissions)) {
-      ActivityCompat.requestPermissions(this, requiredPermissions, REQUEST_CODE_PERMISSIONS);
-    }
-  }
-   */
 
   private boolean isAnyOfPermissionsNotGranted(String[] requiredPermissions){
     for(String permission: requiredPermissions){
