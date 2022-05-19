@@ -13,12 +13,4 @@
       android:contentDescription="alert_image"
       android:src="@drawable/alert" />
 
-  <TextView
-      android:id="@+id/textView"
-      android:layout_width="match_parent"
-      android:layout_height="74dp"
-      android:foregroundTint="#F6F0F0"
-      android:text="Pay attention to the surrounding environment"
-      android:textSize="20sp" />
-
 </FrameLayout>

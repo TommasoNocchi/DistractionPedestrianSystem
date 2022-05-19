@@ -62,8 +62,6 @@ public class BackgroundScanService extends Service implements SensorEventListene
   private boolean isRunning; // Flag indicating if service is already running.
   private int devicesCount; // Total discovered devices count
 
-
-
   private SensorManager sm;
   private Sensor s1;
   private Sensor s2;
@@ -93,13 +91,10 @@ public class BackgroundScanService extends Service implements SensorEventListene
     setupProximityManager();
     isRunning = false;
 
-
-
     lastRilevations = new ArrayList<>();
 
     // Setup sensors
     sensorSetup();
-
   }
 
   private void setupProximityManager() {
@@ -141,7 +136,6 @@ public class BackgroundScanService extends Service implements SensorEventListene
       public void onServiceReady() {
         proximityManager.startScanning();
         devicesCount = 0;
-        //Toast.makeText(BackgroundScanService.this, "Scanning service started.", Toast.LENGTH_SHORT).show();
       }
     });
   }
@@ -186,7 +180,6 @@ public class BackgroundScanService extends Service implements SensorEventListene
       proximityManager.disconnect();
       proximityManager = null;
     }
-    //Toast.makeText(BackgroundScanService.this, "Scanning service stopped.", Toast.LENGTH_SHORT).show();
     super.onDestroy();
   }
 
@@ -209,7 +202,6 @@ public class BackgroundScanService extends Service implements SensorEventListene
 
   @Override
   public void onSensorChanged(SensorEvent event) {
-    System.out.println("Here in onSensorChanged");
     if(event.sensor.getType() == Sensor.TYPE_STEP_DETECTOR) {
       systemStepCount++;
       isInThePreAlert = true;
@@ -239,8 +231,6 @@ public class BackgroundScanService extends Service implements SensorEventListene
     }
     return null;
   }
-
-
 
   private void detectAlert(RemoteBluetoothDevice device){
     double deviceRssi = device.getRssi();
@@ -280,7 +270,7 @@ public class BackgroundScanService extends Service implements SensorEventListene
             System.out.println("Prealert2");
             int reqCode = 1;
             Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-            showNotification(this, "Title", "Pay attention to the surrounding environment", intent, reqCode);
+            showNotification(this, "Distraction pedestrian system", "Pay attention to the surrounding environment", intent, reqCode);
 
             // I check if the user is walking. I check also if he has performed too steps
             System.out.println("C1:" + (systemStepCount - rilevation.getStepCount())/(deviceTimestamp - rilevation.getTimestamp()) + ">" + MIN_STEP_SPEED_THRESHOLD
@@ -294,7 +284,6 @@ public class BackgroundScanService extends Service implements SensorEventListene
 
               //Aggiungo in array locale dell'applicazione così da supportare una possibile implentazione di un log/history
               encountered_devs.add(device);
-              //lastStepCount = systemStepCount;
             }
           }
         }
@@ -314,7 +303,6 @@ public class BackgroundScanService extends Service implements SensorEventListene
 
     stopService(svc);
     startService(svc);
-
   }
 
   public void showNotification(Context context, String title, String message, Intent intent, int reqCode) {
@@ -341,5 +329,4 @@ public class BackgroundScanService extends Service implements SensorEventListene
 
     Log.d("showNotification", "showNotification: " + reqCode);
   }
-
 }

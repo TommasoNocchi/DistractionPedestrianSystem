@@ -20,9 +20,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="4dp"
-        android:text="Start monitoring"
         android:background="@drawable/custom_button"
-        />
+        android:text="@string/settings" />
 
   </LinearLayout>
 

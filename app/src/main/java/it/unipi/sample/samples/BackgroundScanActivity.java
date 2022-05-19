@@ -20,7 +20,6 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
-import com.androidplot.xy.XYPlot;
 import com.kontakt.sample.R;
 
 import it.unipi.sample.service.BackgroundScanService;
@@ -64,7 +63,6 @@ public class BackgroundScanActivity extends AppCompatActivity implements View.On
 
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_background_scan);
-    statusText = (TextView) findViewById(R.id.status_text);
     serviceIntent = new Intent(getApplicationContext(), BackgroundScanService.class);
 
     //Setup Toolbar
@@ -101,10 +99,8 @@ public class BackgroundScanActivity extends AppCompatActivity implements View.On
   }
 
   private void setupButtons() {
-    Button startScanButton = (Button) findViewById(R.id.start_scan_button);
-    Button stopScanButton = (Button) findViewById(R.id.stop_scan_button);
+    Button startScanButton = (Button) findViewById(R.id.scan_button);
     startScanButton.setOnClickListener(this);
-    stopScanButton.setOnClickListener(this);
   }
 
   private void startBackgroundService() {
@@ -117,13 +113,17 @@ public class BackgroundScanActivity extends AppCompatActivity implements View.On
 
   @Override
   public void onClick(View view) {
-    switch (view.getId()) {
-      case R.id.start_scan_button:
+    if(view.getId() == R.id.scan_button){
+      Button scanButton = (Button) findViewById(R.id.scan_button);
+      if(scanButton.getText().equals("Start monitoring")){
+        scanButton.setText("Stop monitoring");
         startBackgroundService();
-        break;
-      case R.id.stop_scan_button:
+      }
+      else {
+        scanButton.setText("Start monitoring");
         stopBackgroundService();
-        break;
+      }
+
     }
   }
 
@@ -161,18 +161,14 @@ public class BackgroundScanActivity extends AppCompatActivity implements View.On
           System.out.println("Screen on");
           startBackgroundService();
         }
-
       }
     };
-
     getApplicationContext().registerReceiver(screenOnOffReceiver, theFilter);
   }
-
 
   @Override
   public void onDestroy() {
     super.onDestroy();
-
     writeFileHistory(context);
   }
 
