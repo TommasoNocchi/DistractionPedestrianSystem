@@ -2,20 +2,22 @@ package it.unipi.sample.samples.common;
 
 public class Rilevation {
     private String nodeId;
-    private int rssi;
+    private double rssi;
     private long timestamp;
+    private double stepCount;
 
-    public Rilevation(String nodeId, int rssi, long timestamp){
+    public Rilevation(String nodeId, double rssi, long timestamp, double stepCount){
         this.nodeId = nodeId;
         this.rssi = rssi;
         this.timestamp = timestamp;
+        this.stepCount = stepCount;
     }
 
     public String getNodeId() {
         return nodeId;
     }
 
-    public int getRssi() {
+    public double getRssi() {
         return rssi;
     }
 
@@ -23,11 +25,15 @@ public class Rilevation {
         return timestamp;
     }
 
-    public void setRssi(int rssi) {
+    public void setRssi(double rssi) {
         this.rssi = rssi;
     }
 
     public void setTimestamp(long timestamp) {
         this.timestamp = timestamp;
     }
+
+    public double getStepCount() { return stepCount;}
+
+    public void setStepCount(double stepCount) { this.stepCount = stepCount;}
 }

@@ -69,22 +69,21 @@ public class BackgroundScanService extends Service implements SensorEventListene
   private Sensor s2;
   private TextView statusText;
 
-  private int systemStepCount = 0;
+  private double systemStepCount = 0;
   private int debugStepCounter = 0;
   private boolean firstRilevation = true;
 
   // steps by second thresholds
-  private double MIN_STEP_SPEED_THRESHOLD = 0.5/1000;
-  private double MAX_STEP_SPEED_THRESHOLD = 10/1000;
-  private int RSSI_THRESHOLD = -80;
+  private double MIN_STEP_SPEED_THRESHOLD = 0.0005;
+  private double MAX_STEP_SPEED_THRESHOLD = 0.02;
+  private double RSSI_THRESHOLD = -80;
   // user speed thresholds
-  private double MIN_USER_SPEED_THRESHOLD = 2/1000;
-  private double MAX_USER_SPEED_THRESHOLD = 35/1000;
+  private double MIN_USER_SPEED_THRESHOLD = 0.0005;
+  private double MAX_USER_SPEED_THRESHOLD = 0.035;
   private int MEASURED_POWER = -69;
   private int ENVIROMENT_FACTOR_CONSTANT = 2; //Range 2-4: 2 = Low-strength
 
   private boolean isInThePreAlert = false;
-  private int lastStepCount;
   private ArrayList<Rilevation> lastRilevations;
   private ArrayList<RemoteBluetoothDevice> encountered_devs = new ArrayList<>();
 
@@ -244,19 +243,18 @@ public class BackgroundScanService extends Service implements SensorEventListene
 
 
   private void detectAlert(RemoteBluetoothDevice device){
-    int deviceRssi = device.getRssi();
+    double deviceRssi = device.getRssi();
     long deviceTimestamp = device.getTimestamp();
     Rilevation rilevation;
     if(firstRilevation){
       firstRilevation = false;
-      rilevation = new Rilevation(device.getUniqueId(), device.getRssi(), device.getTimestamp());
+      rilevation = new Rilevation(device.getUniqueId(), device.getRssi(), device.getTimestamp(), systemStepCount);
       lastRilevations.add(rilevation);
-      lastStepCount = systemStepCount;
     }
     else{
       rilevation = getRilevation(device.getUniqueId());
       if(rilevation == null)
-        rilevation = new Rilevation(device.getUniqueId(), device.getRssi(), device.getTimestamp());
+        rilevation = new Rilevation(device.getUniqueId(), device.getRssi(), device.getTimestamp(), systemStepCount);
 
       else
       {
@@ -267,22 +265,30 @@ public class BackgroundScanService extends Service implements SensorEventListene
                 deviceTimestamp + ", lastTimestamp: " + rilevation.getTimestamp() + "interval(seconds): "
                 + TimeUnit.MILLISECONDS.toSeconds(deviceTimestamp - rilevation.getTimestamp()) + "interval(millis): "
                 + TimeUnit.MILLISECONDS.toMillis(deviceTimestamp - rilevation.getTimestamp()) + ", currentStepCount: "
-                + systemStepCount + ", lastStepCount: " + lastStepCount);
+                + systemStepCount + ", lastStepCount: " + rilevation.getStepCount());
 
-        if((deviceRssi - rilevation.getRssi())/(deviceTimestamp - rilevation.getTimestamp()) > MIN_USER_SPEED_THRESHOLD &&
+        if(deviceTimestamp !=  rilevation.getTimestamp())
+          System.out.println("C1:" + (deviceRssi - rilevation.getRssi())/(deviceTimestamp - rilevation.getTimestamp()) + ">" + MIN_USER_SPEED_THRESHOLD
+        +", < " + MAX_USER_SPEED_THRESHOLD);
+
+        if(deviceTimestamp !=  rilevation.getTimestamp() &&
+                (deviceRssi - rilevation.getRssi())/(deviceTimestamp - rilevation.getTimestamp()) > MIN_USER_SPEED_THRESHOLD &&
                 (deviceRssi - rilevation.getRssi())/(deviceTimestamp - rilevation.getTimestamp()) < MAX_USER_SPEED_THRESHOLD){ //to prevent erroneous measurements made by the Beacon sensor
+          System.out.println("Prealert1");
           // I check if new device is too near
           if(deviceRssi > RSSI_THRESHOLD){ //PRE-ALERT
-
+            System.out.println("Prealert2");
             int reqCode = 1;
             Intent intent = new Intent(getApplicationContext(), MainActivity.class);
             showNotification(this, "Title", "Pay attention to the surrounding environment", intent, reqCode);
 
             // I check if the user is walking. I check also if he has performed too steps
-            //if(systemStepCount > lastStepCount)
-            if((systemStepCount - lastStepCount)/(deviceTimestamp - rilevation.getTimestamp()) < MAX_STEP_SPEED_THRESHOLD &&
-                    (systemStepCount - lastStepCount)/(deviceTimestamp - rilevation.getTimestamp()) > MIN_STEP_SPEED_THRESHOLD){
+            System.out.println("C1:" + (systemStepCount - rilevation.getStepCount())/(deviceTimestamp - rilevation.getTimestamp()) + ">" + MIN_STEP_SPEED_THRESHOLD
+                    +", < " + MAX_USER_SPEED_THRESHOLD);
+            if((systemStepCount - rilevation.getStepCount())/(deviceTimestamp - rilevation.getTimestamp()) < MAX_STEP_SPEED_THRESHOLD &&
+                    (systemStepCount - rilevation.getStepCount())/(deviceTimestamp - rilevation.getTimestamp()) > MIN_STEP_SPEED_THRESHOLD){
 
+              System.out.println("SENDING ALERT!");
               //ALERT 
               launchMainService();
 
@@ -294,11 +300,12 @@ public class BackgroundScanService extends Service implements SensorEventListene
         }
         rilevation.setRssi(deviceRssi);
         rilevation.setTimestamp(deviceTimestamp);
-        lastStepCount = systemStepCount;
+        rilevation.setStepCount(systemStepCount);
       }
       addRilevation(rilevation);
     }
     System.out.println("Timestamp: " + new Timestamp(System.currentTimeMillis()).toString() + ", " + device.toString());
+
     //statusText.setText(String.format("Total discovered devices: %d\n\nLast scanned device:\n%s", devicesCount, device.toString()));
   }
 
