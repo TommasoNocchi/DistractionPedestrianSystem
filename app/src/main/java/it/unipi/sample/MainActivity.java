@@ -16,6 +16,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -27,19 +28,26 @@ import androidx.core.content.ContextCompat;
 
 import com.kontakt.sample.R;
 
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+
 import it.unipi.sample.samples.BackgroundScanActivity;
 
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
   public static final int REQUEST_CODE_PERMISSIONS = 100;
-
+  TextView textView;
   private LinearLayout buttonsLayout;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main);
+    textView = findViewById(R.id.textView);
     setupButtons();
     checkPermissions();
     int reqCode = 1;
@@ -103,6 +111,34 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
       buttonsLayout.getChildAt(i).setEnabled(false);
     }
   }
+
+  public void ReadTextFile(View view) throws IOException {
+    ArrayList<String> lastInfo = new ArrayList<String>();
+    String string = "";
+    StringBuilder stringBuilder = new StringBuilder();
+    FileInputStream is = openFileInput("PedestrianSystemLogHistoryFile.txt");
+    BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+
+    while (true) {
+      try {
+        if ((string = reader.readLine()) == null) break;
+      }
+      catch (IOException e) {
+        e.printStackTrace();
+      }
+      if (lastInfo.add(string) && lastInfo.size() > 5)
+        lastInfo.remove(0);
+
+    }
+    for(int i = 0; i < lastInfo.size(); i++ ) {
+      stringBuilder.append(lastInfo.get(i)).append("\n");
+      textView.setText(stringBuilder);
+    }
+    is.close();
+    Toast.makeText(getBaseContext(), stringBuilder.toString(),
+            Toast.LENGTH_LONG).show();
+  }
+
 
   @RequiresApi(api = Build.VERSION_CODES.M)
   @Override

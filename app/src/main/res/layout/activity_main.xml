@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:background="@drawable/background"
     >
 
   <LinearLayout
@@ -18,10 +19,64 @@
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/button_scan_background"
         android:layout_width="match_parent"
+        android:textColor="#FFFFFF"
+        android:textSize="30sp"
         android:layout_height="wrap_content"
+        android:layout_marginTop="30dp"
         android:layout_marginBottom="4dp"
         android:background="@drawable/custom_button"
+        android:shadowColor="#A8A8A8"
+        android:shadowDx="0"
+        android:shadowDy="0"
+        android:shadowRadius="0"
         android:text="@string/settings" />
+
+    <Button
+        android:id="@+id/button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="#FFFFFF"
+        android:textSize="30sp"
+        android:layout_marginTop="50dp"
+        android:onClick="ReadTextFile"
+        android:padding="5dp"
+        android:background="@drawable/custom_button"
+        android:shadowColor="#A8A8A8"
+        android:shadowDx="0"
+        android:shadowDy="0"
+        android:shadowRadius="0"
+        android:text="Read History File" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="40dp"
+        android:text="LOOK AT LAST INFORMATION"
+        android:textColor="#FFFF"
+        android:textAlignment="center"
+        android:textSize="20sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/button"
+        android:layout_marginTop="20dp"
+        android:textSize="20sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/textView1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:layout_marginTop="300dp"
+        android:text="Distraction Pedestrian System"
+        android:textSize="26sp"
+        android:textColor="#FFFF"
+        android:textStyle="bold" />
+
 
   </LinearLayout>
 

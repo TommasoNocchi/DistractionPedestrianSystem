@@ -7,14 +7,21 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="@dimen/activity_padding"
+    android:background="@drawable/background"
     >
 
   <Button
       android:id="@+id/scan_button"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
+      android:textColor="#FFFFFF"
+      android:textSize="30sp"
       android:layout_marginTop="16dp"
       android:background="@drawable/custom_button"
+      android:shadowColor="#A8A8A8"
+      android:shadowDx="0"
+      android:shadowDy="0"
+      android:shadowRadius="0"
       android:text="@string/start_monitoring" />
 
   <ProgressBar
@@ -25,5 +32,16 @@
       android:layout_marginTop="16dp"
       android:visibility="gone"
       />
+
+  <TextView
+      android:id="@+id/textView1"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_centerInParent="true"
+      android:layout_marginTop="500dp"
+      android:text="Distraction Pedestrian System"
+      android:textSize="26sp"
+      android:textColor="#FFFF"
+      android:textStyle="bold" />
 
 </LinearLayout>

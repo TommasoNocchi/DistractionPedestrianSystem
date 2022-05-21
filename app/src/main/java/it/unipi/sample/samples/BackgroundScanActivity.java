@@ -14,6 +14,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
@@ -27,11 +28,14 @@ import it.unipi.sample.service.BackgroundScanService;
 import com.kontakt.sdk.android.common.profile.RemoteBluetoothDevice;
 
 import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 
 /**
@@ -45,6 +49,7 @@ public class BackgroundScanActivity extends AppCompatActivity implements View.On
 
   private Intent serviceIntent;
   private TextView statusText;
+
 
 
   private static String TAG = "StepCounterExample";
@@ -64,7 +69,6 @@ public class BackgroundScanActivity extends AppCompatActivity implements View.On
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_background_scan);
     serviceIntent = new Intent(getApplicationContext(), BackgroundScanService.class);
-
     //Setup Toolbar
     setupToolbar();
 
@@ -169,7 +173,7 @@ public class BackgroundScanActivity extends AppCompatActivity implements View.On
   @Override
   public void onDestroy() {
     super.onDestroy();
-    writeFileHistory(context);
+    //writeFileHistory(context);
   }
 
   /**
@@ -177,6 +181,7 @@ public class BackgroundScanActivity extends AppCompatActivity implements View.On
     return Math.pow(10, (MEASURED_POWER-deviceRSSI)/(10*ENVIROMENT_FACTOR_CONSTANT));
   }*/
 
+  /*
   //for possible localhistory
   private void writeFileHistory(Context context) {
     String tmp;
@@ -191,9 +196,9 @@ public class BackgroundScanActivity extends AppCompatActivity implements View.On
         Log.e("Exception", "File write failed: " + e.toString());
       }
     }
-  }
+  }*/
 
-  private String readFromFile(Context context) {
+  /*private String readFromFile(Context context) {
 
     String ret = "";
 
@@ -222,7 +227,9 @@ public class BackgroundScanActivity extends AppCompatActivity implements View.On
 
     System.out.println("READ from file:"+ret);
     return ret;
-  }
+  }*/
+
+
 
   /**
    * Note: The code above works well, but the resulting String will not contain any of the linebreaks from the file.

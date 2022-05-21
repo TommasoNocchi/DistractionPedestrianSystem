@@ -39,6 +39,8 @@ import com.kontakt.sdk.android.common.profile.IEddystoneDevice;
 import com.kontakt.sdk.android.common.profile.IEddystoneNamespace;
 import com.kontakt.sdk.android.common.profile.RemoteBluetoothDevice;
 
+import java.io.FileOutputStream;
+import java.io.OutputStreamWriter;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -329,4 +331,22 @@ public class BackgroundScanService extends Service implements SensorEventListene
 
     Log.d("showNotification", "showNotification: " + reqCode);
   }
+
+
+  public void WriteFile(String info) {
+    // add-write text into file
+    try {
+      FileOutputStream fileout=openFileOutput("PedestrianSystemLogHistoryFile.txt", MODE_APPEND);
+      OutputStreamWriter outputWriter=new OutputStreamWriter(fileout);
+      String tmp = new Timestamp(System.currentTimeMillis()).toString();
+      outputWriter.write(tmp + " -- " + info +"\n");
+      outputWriter.close();
+      //display file saved message
+      //Toast.makeText(getBaseContext(), "File saved successfully!",
+              //Toast.LENGTH_SHORT).show();
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+  }
+
 }
