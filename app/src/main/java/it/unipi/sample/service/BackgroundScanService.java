@@ -4,10 +4,8 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -17,7 +15,6 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
-import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -48,7 +45,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import it.unipi.sample.MainActivity;
-import it.unipi.sample.samples.common.Rilevation;
+import it.unipi.sample.samples.common.Message;
 
 public class BackgroundScanService extends Service implements SensorEventListener {
 
@@ -72,6 +69,7 @@ public class BackgroundScanService extends Service implements SensorEventListene
   private double systemStepCount = 0;
   private int debugStepCounter = 0;
   private boolean firstRilevation = true;
+  private long lastNotificationTimestamp = -1;
 
   // steps by second thresholds
   private double MIN_STEP_SPEED_THRESHOLD = 0.0005;
@@ -82,9 +80,10 @@ public class BackgroundScanService extends Service implements SensorEventListene
   private double MAX_USER_SPEED_THRESHOLD = 0.035;
   private int MEASURED_POWER = -69;
   private int ENVIROMENT_FACTOR_CONSTANT = 2; //Range 2-4: 2 = Low-strength
+  private long MIN_INTERVAL_BETWEEN_NOTIFICATIONS = 30000; // 30 seconds
 
   private boolean isInThePreAlert = false;
-  private ArrayList<Rilevation> lastRilevations;
+  private ArrayList<Message> lastMessages;
   private ArrayList<RemoteBluetoothDevice> encountered_devs = new ArrayList<>();
 
   @Override
@@ -93,7 +92,7 @@ public class BackgroundScanService extends Service implements SensorEventListene
     setupProximityManager();
     isRunning = false;
 
-    lastRilevations = new ArrayList<>();
+    lastMessages = new ArrayList<>();
 
     // Setup sensors
     sensorSetup();
@@ -211,25 +210,25 @@ public class BackgroundScanService extends Service implements SensorEventListene
     }
   }
 
-  private void addRilevation(Rilevation newRilevation){
-    Rilevation rilevation;
-    for(int i=0; i<lastRilevations.size(); i++){
-      rilevation = lastRilevations.get(i);
-      if(rilevation.getNodeId().equals(newRilevation.getNodeId())){
-        lastRilevations.get(i).setRssi(newRilevation.getRssi());
-        lastRilevations.get(i).setTimestamp(newRilevation.getTimestamp());
+  private void addRilevation(Message newMessage){
+    Message message;
+    for(int i = 0; i< lastMessages.size(); i++){
+      message = lastMessages.get(i);
+      if(message.getNodeId().equals(newMessage.getNodeId())){
+        lastMessages.get(i).setRssi(newMessage.getRssi());
+        lastMessages.get(i).setTimestamp(newMessage.getTimestamp());
         return;
       }
     }
-    lastRilevations.add(newRilevation);
+    lastMessages.add(newMessage);
   }
 
-  private Rilevation getRilevation(String nodeId){
-    Rilevation rilevation;
-    for(int i=0; i<lastRilevations.size(); i++){
-      rilevation = lastRilevations.get(i);
-      if(rilevation.getNodeId().equals(nodeId))
-        return rilevation;
+  private Message getRilevation(String nodeId){
+    Message message;
+    for(int i = 0; i< lastMessages.size(); i++){
+      message = lastMessages.get(i);
+      if(message.getNodeId().equals(nodeId))
+        return message;
     }
     return null;
   }
@@ -237,67 +236,59 @@ public class BackgroundScanService extends Service implements SensorEventListene
   private void detectAlert(RemoteBluetoothDevice device){
     double deviceRssi = device.getRssi();
     long deviceTimestamp = device.getTimestamp();
-    Rilevation rilevation;
+    Message message;
     if(firstRilevation){
       firstRilevation = false;
-      rilevation = new Rilevation(device.getUniqueId(), device.getRssi(), device.getTimestamp(), systemStepCount);
-      lastRilevations.add(rilevation);
+      message = new Message(device.getUniqueId(), device.getRssi(), device.getTimestamp(), systemStepCount);
+      lastMessages.add(message);
     }
     else{
-      rilevation = getRilevation(device.getUniqueId());
-      if(rilevation == null)
-        rilevation = new Rilevation(device.getUniqueId(), device.getRssi(), device.getTimestamp(), systemStepCount);
+      message = getRilevation(device.getUniqueId());
+      if(message == null)
+        message = new Message(device.getUniqueId(), device.getRssi(), device.getTimestamp(), systemStepCount);
 
       else
       {
         // I check if new device is nearest wrt last one. I check also if the speed is too high,
         // in such case there was an error in the rilevation
-        //if(deviceRssi > lastRSSI) --> if(deviceRssi - lastRssi > SOGLIA)
-        System.out.println("System state --> currentRssi: " + deviceRssi + ", lastRssi: " + rilevation.getRssi() + ", currentTimestamp: " +
-                deviceTimestamp + ", lastTimestamp: " + rilevation.getTimestamp() + "interval(seconds): "
-                + TimeUnit.MILLISECONDS.toSeconds(deviceTimestamp - rilevation.getTimestamp()) + "interval(millis): "
-                + TimeUnit.MILLISECONDS.toMillis(deviceTimestamp - rilevation.getTimestamp()) + ", currentStepCount: "
-                + systemStepCount + ", lastStepCount: " + rilevation.getStepCount());
+        if(deviceTimestamp !=  message.getTimestamp() &&
+                (deviceRssi - message.getRssi())/(deviceTimestamp - message.getTimestamp()) > MIN_USER_SPEED_THRESHOLD &&
+                (deviceRssi - message.getRssi())/(deviceTimestamp - message.getTimestamp()) < MAX_USER_SPEED_THRESHOLD){
 
-        if(deviceTimestamp !=  rilevation.getTimestamp())
-          System.out.println("C1:" + (deviceRssi - rilevation.getRssi())/(deviceTimestamp - rilevation.getTimestamp()) + ">" + MIN_USER_SPEED_THRESHOLD
-        +", < " + MAX_USER_SPEED_THRESHOLD);
-
-        if(deviceTimestamp !=  rilevation.getTimestamp() &&
-                (deviceRssi - rilevation.getRssi())/(deviceTimestamp - rilevation.getTimestamp()) > MIN_USER_SPEED_THRESHOLD &&
-                (deviceRssi - rilevation.getRssi())/(deviceTimestamp - rilevation.getTimestamp()) < MAX_USER_SPEED_THRESHOLD){ //to prevent erroneous measurements made by the Beacon sensor
-          System.out.println("Prealert1");
-          // I check if new device is too near
-          if(deviceRssi > RSSI_THRESHOLD){ //PRE-ALERT
-            System.out.println("Prealert2");
+          // I check if new device is in alert zone
+          if(deviceRssi > RSSI_THRESHOLD)
+          {
             int reqCode = 1;
-            Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-            showNotification(this, "Distraction pedestrian system", "Pay attention to the surrounding environment", intent, reqCode);
+            if(lastNotificationTimestamp == -1){
+              Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+              showNotification(this, "Distraction pedestrian system",
+                      "Pay attention to the surrounding environment", intent, reqCode);
+              lastNotificationTimestamp = deviceTimestamp;
+              WriteFile(device.getAddress());
+            }
 
-            // I check if the user is walking. I check also if he has performed too steps
-            System.out.println("C1:" + (systemStepCount - rilevation.getStepCount())/(deviceTimestamp - rilevation.getTimestamp()) + ">" + MIN_STEP_SPEED_THRESHOLD
-                    +", < " + MAX_USER_SPEED_THRESHOLD);
-            if((systemStepCount - rilevation.getStepCount())/(deviceTimestamp - rilevation.getTimestamp()) < MAX_STEP_SPEED_THRESHOLD &&
-                    (systemStepCount - rilevation.getStepCount())/(deviceTimestamp - rilevation.getTimestamp()) > MIN_STEP_SPEED_THRESHOLD){
+            else if(deviceTimestamp - lastNotificationTimestamp > MIN_INTERVAL_BETWEEN_NOTIFICATIONS){
+              Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+              showNotification(this, "Distraction pedestrian system",
+                      "Pay attention to the surrounding environment", intent, reqCode);
+            }
 
-              System.out.println("SENDING ALERT!");
-              //ALERT 
+            // I check if the user is walking. I check also if he has performed too steps due to step counter errors.
+            if((systemStepCount - message.getStepCount())/(deviceTimestamp - message.getTimestamp()) < MAX_STEP_SPEED_THRESHOLD &&
+                    (systemStepCount - message.getStepCount())/(deviceTimestamp - message.getTimestamp()) > MIN_STEP_SPEED_THRESHOLD){
+
               launchMainService();
-
-              //Aggiungo in array locale dell'applicazione così da supportare una possibile implentazione di un log/history
+              // added to encountered devices
               encountered_devs.add(device);
             }
           }
         }
-        rilevation.setRssi(deviceRssi);
-        rilevation.setTimestamp(deviceTimestamp);
-        rilevation.setStepCount(systemStepCount);
+        message.setRssi(deviceRssi);
+        message.setTimestamp(deviceTimestamp);
+        message.setStepCount(systemStepCount);
       }
-      addRilevation(rilevation);
+      addRilevation(message);
     }
-    System.out.println("Timestamp: " + new Timestamp(System.currentTimeMillis()).toString() + ", " + device.toString());
-
-    //statusText.setText(String.format("Total discovered devices: %d\n\nLast scanned device:\n%s", devicesCount, device.toString()));
   }
 
   private void launchMainService() {
@@ -339,6 +330,7 @@ public class BackgroundScanService extends Service implements SensorEventListene
       FileOutputStream fileout=openFileOutput("PedestrianSystemLogHistoryFile.txt", MODE_APPEND);
       OutputStreamWriter outputWriter=new OutputStreamWriter(fileout);
       String tmp = new Timestamp(System.currentTimeMillis()).toString();
+      System.out.println("Write file: " + tmp + " -- " + info);
       outputWriter.write(tmp + " -- " + info +"\n");
       outputWriter.close();
       //display file saved message

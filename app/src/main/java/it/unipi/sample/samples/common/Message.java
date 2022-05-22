@@ -1,12 +1,12 @@
 package it.unipi.sample.samples.common;
 
-public class Rilevation {
+public class Message {
     private String nodeId;
     private double rssi;
     private long timestamp;
     private double stepCount;
 
-    public Rilevation(String nodeId, double rssi, long timestamp, double stepCount){
+    public Message(String nodeId, double rssi, long timestamp, double stepCount){
         this.nodeId = nodeId;
         this.rssi = rssi;
         this.timestamp = timestamp;
