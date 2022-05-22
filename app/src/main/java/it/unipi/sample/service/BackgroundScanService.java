@@ -38,7 +38,6 @@ import com.kontakt.sdk.android.common.profile.RemoteBluetoothDevice;
 
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
-import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
@@ -58,7 +57,7 @@ public class BackgroundScanService extends Service implements SensorEventListene
 
   private final Handler handler = new Handler();
   private ProximityManager proximityManager;
-  private boolean isRunning; // Flag indicating if service is already running.
+  public static boolean isRunning; // Flag indicating if service is already running.
   private int devicesCount; // Total discovered devices count
 
   private SensorManager sm;
@@ -68,7 +67,7 @@ public class BackgroundScanService extends Service implements SensorEventListene
 
   private double systemStepCount = 0;
   private int debugStepCounter = 0;
-  private boolean firstRilevation = true;
+  private boolean firstMessage = true;
   private long lastNotificationTimestamp = -1;
 
   // steps by second thresholds
@@ -79,7 +78,8 @@ public class BackgroundScanService extends Service implements SensorEventListene
   private double MIN_USER_SPEED_THRESHOLD = 0.0005;
   private double MAX_USER_SPEED_THRESHOLD = 0.035;
   private int MEASURED_POWER = -69;
-  private int ENVIROMENT_FACTOR_CONSTANT = 2; //Range 2-4: 2 = Low-strength
+  private int ENVIROMENT_FACTOR_CONSTANT = 4;
+
   private long MIN_INTERVAL_BETWEEN_NOTIFICATIONS = 30000; // 30 seconds
 
   private boolean isInThePreAlert = false;
@@ -210,7 +210,7 @@ public class BackgroundScanService extends Service implements SensorEventListene
     }
   }
 
-  private void addRilevation(Message newMessage){
+  private void addMessage(Message newMessage){
     Message message;
     for(int i = 0; i< lastMessages.size(); i++){
       message = lastMessages.get(i);
@@ -223,7 +223,7 @@ public class BackgroundScanService extends Service implements SensorEventListene
     lastMessages.add(newMessage);
   }
 
-  private Message getRilevation(String nodeId){
+  private Message getMessage(String nodeId){
     Message message;
     for(int i = 0; i< lastMessages.size(); i++){
       message = lastMessages.get(i);
@@ -237,20 +237,20 @@ public class BackgroundScanService extends Service implements SensorEventListene
     double deviceRssi = device.getRssi();
     long deviceTimestamp = device.getTimestamp();
     Message message;
-    if(firstRilevation){
-      firstRilevation = false;
+    if(firstMessage){
+      firstMessage = false;
       message = new Message(device.getUniqueId(), device.getRssi(), device.getTimestamp(), systemStepCount);
       lastMessages.add(message);
     }
     else{
-      message = getRilevation(device.getUniqueId());
+      message = getMessage(device.getUniqueId());
       if(message == null)
         message = new Message(device.getUniqueId(), device.getRssi(), device.getTimestamp(), systemStepCount);
 
       else
       {
         // I check if new device is nearest wrt last one. I check also if the speed is too high,
-        // in such case there was an error in the rilevation
+        // in such case there was an error in the message
         if(deviceTimestamp !=  message.getTimestamp() &&
                 (deviceRssi - message.getRssi())/(deviceTimestamp - message.getTimestamp()) > MIN_USER_SPEED_THRESHOLD &&
                 (deviceRssi - message.getRssi())/(deviceTimestamp - message.getTimestamp()) < MAX_USER_SPEED_THRESHOLD){
@@ -264,19 +264,19 @@ public class BackgroundScanService extends Service implements SensorEventListene
               showNotification(this, "Distraction pedestrian system",
                       "Pay attention to the surrounding environment", intent, reqCode);
               lastNotificationTimestamp = deviceTimestamp;
-              WriteFile(device.getAddress());
             }
 
             else if(deviceTimestamp - lastNotificationTimestamp > MIN_INTERVAL_BETWEEN_NOTIFICATIONS){
               Intent intent = new Intent(getApplicationContext(), MainActivity.class);
               showNotification(this, "Distraction pedestrian system",
                       "Pay attention to the surrounding environment", intent, reqCode);
+              lastNotificationTimestamp = deviceTimestamp;
             }
 
             // I check if the user is walking. I check also if he has performed too steps due to step counter errors.
             if((systemStepCount - message.getStepCount())/(deviceTimestamp - message.getTimestamp()) < MAX_STEP_SPEED_THRESHOLD &&
                     (systemStepCount - message.getStepCount())/(deviceTimestamp - message.getTimestamp()) > MIN_STEP_SPEED_THRESHOLD){
-
+              WriteFile(device.getAddress());
               launchMainService();
               // added to encountered devices
               encountered_devs.add(device);
@@ -287,7 +287,7 @@ public class BackgroundScanService extends Service implements SensorEventListene
         message.setTimestamp(deviceTimestamp);
         message.setStepCount(systemStepCount);
       }
-      addRilevation(message);
+      addMessage(message);
     }
   }
 
@@ -330,12 +330,9 @@ public class BackgroundScanService extends Service implements SensorEventListene
       FileOutputStream fileout=openFileOutput("PedestrianSystemLogHistoryFile.txt", MODE_APPEND);
       OutputStreamWriter outputWriter=new OutputStreamWriter(fileout);
       String tmp = new Timestamp(System.currentTimeMillis()).toString();
-      System.out.println("Write file: " + tmp + " -- " + info);
-      outputWriter.write(tmp + " -- " + info +"\n");
+      outputWriter.write(tmp + "\n" + info +"\n");
       outputWriter.close();
-      //display file saved message
-      //Toast.makeText(getBaseContext(), "File saved successfully!",
-              //Toast.LENGTH_SHORT).show();
+
     } catch (Exception e) {
       e.printStackTrace();
     }

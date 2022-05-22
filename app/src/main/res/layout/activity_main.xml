@@ -53,7 +53,7 @@
         android:layout_marginTop="40dp"
         android:text="LOOK AT LAST INFORMATION"
         android:textColor="#FFFF"
-        android:textAlignment="center"
+        android:gravity="center"
         android:textSize="20sp"
         android:textStyle="bold" />
 
@@ -63,7 +63,9 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/button"
         android:layout_marginTop="20dp"
-        android:textSize="20sp"
+        android:textSize="12sp"
+        android:textColor="#FFFF"
+        android:gravity="center"
         android:textStyle="bold" />
 
 

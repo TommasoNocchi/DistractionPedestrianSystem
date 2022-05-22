@@ -29,6 +29,7 @@ import androidx.core.content.ContextCompat;
 import com.kontakt.sample.R;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -42,6 +43,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
   public static final int REQUEST_CODE_PERMISSIONS = 100;
   TextView textView;
   private LinearLayout buttonsLayout;
+  private int BEACON_INFO_NUMBER = 5;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -116,6 +118,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     ArrayList<String> lastInfo = new ArrayList<String>();
     String string = "";
     StringBuilder stringBuilder = new StringBuilder();
+    File file = getFileStreamPath("PedestrianSystemLogHistoryFile.txt");
+    if (!file.exists()) {
+      Toast.makeText(this, "The history does not exist", Toast.LENGTH_SHORT).show();
+      return;
+    }
     FileInputStream is = openFileInput("PedestrianSystemLogHistoryFile.txt");
     BufferedReader reader = new BufferedReader(new InputStreamReader(is));
 
@@ -126,17 +133,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
       catch (IOException e) {
         e.printStackTrace();
       }
-      if (lastInfo.add(string) && lastInfo.size() > 5)
+      if (lastInfo.add(string) && lastInfo.size() > 2*BEACON_INFO_NUMBER)
         lastInfo.remove(0);
 
     }
     for(int i = 0; i < lastInfo.size(); i++ ) {
-      stringBuilder.append(lastInfo.get(i)).append("\n");
+      stringBuilder.append(lastInfo.get(i)).append("\n\n");
       textView.setText(stringBuilder);
     }
     is.close();
-    Toast.makeText(getBaseContext(), stringBuilder.toString(),
-            Toast.LENGTH_LONG).show();
   }
 
 

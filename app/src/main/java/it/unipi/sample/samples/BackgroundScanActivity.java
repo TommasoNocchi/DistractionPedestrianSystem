@@ -50,8 +50,6 @@ public class BackgroundScanActivity extends AppCompatActivity implements View.On
   private Intent serviceIntent;
   private TextView statusText;
 
-
-
   private static String TAG = "StepCounterExample";
 
   private static Context context;
@@ -75,7 +73,11 @@ public class BackgroundScanActivity extends AppCompatActivity implements View.On
     //Setup buttons
     setupButtons();
 
-    //readFromFile(context);
+    Button scanButton = (Button) findViewById(R.id.scan_button);
+    if(BackgroundScanService.isRunning)
+      scanButton.setText("Stop monitoring");
+    else
+      scanButton.setText("Start monitoring");
   }
 
 
@@ -127,7 +129,6 @@ public class BackgroundScanActivity extends AppCompatActivity implements View.On
         scanButton.setText("Start monitoring");
         stopBackgroundService();
       }
-
     }
   }
 
@@ -175,65 +176,4 @@ public class BackgroundScanActivity extends AppCompatActivity implements View.On
     super.onDestroy();
     //writeFileHistory(context);
   }
-
-  /**
-  private double fromRSSItoMeters(int deviceRSSI){
-    return Math.pow(10, (MEASURED_POWER-deviceRSSI)/(10*ENVIROMENT_FACTOR_CONSTANT));
-  }*/
-
-  /*
-  //for possible localhistory
-  private void writeFileHistory(Context context) {
-    String tmp;
-    for (RemoteBluetoothDevice en : encountered_devs){
-      tmp = "Name: "+en.getName()+", Timestamp: "+en.getTimestamp();
-      try {
-        OutputStreamWriter outputStreamWriter = new OutputStreamWriter(context.openFileOutput("history.txt", Context.MODE_PRIVATE));
-        outputStreamWriter.write(tmp);
-        outputStreamWriter.close();
-      }
-      catch (IOException e) {
-        Log.e("Exception", "File write failed: " + e.toString());
-      }
-    }
-  }*/
-
-  /*private String readFromFile(Context context) {
-
-    String ret = "";
-
-    try {
-      InputStream inputStream = context.openFileInput("history.txt");
-
-      if ( inputStream != null ) {
-        InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
-        BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-        String receiveString = "";
-        StringBuilder stringBuilder = new StringBuilder();
-
-        while ( (receiveString = bufferedReader.readLine()) != null ) {
-          stringBuilder.append("\n").append(receiveString);
-        }
-
-        inputStream.close();
-        ret = stringBuilder.toString();
-      }
-    }
-    catch (FileNotFoundException e) {
-      Log.e("login activity", "File not found: " + e.toString());
-    } catch (IOException e) {
-      Log.e("login activity", "Can not read file: " + e.toString());
-    }
-
-    System.out.println("READ from file:"+ret);
-    return ret;
-  }*/
-
-
-
-  /**
-   * Note: The code above works well, but the resulting String will not contain any of the linebreaks from the file.
-   * To add linebreaks again, change line "stringBuilder.append(receiveString);" to "stringBuilder.append(receiveString).append("\n");".
-   * If you expect other linebreak characters (e.g. Windows text files will have \r etc..), in your final string, you'll have to adapt this a bit more.
-   */
 }
