@@ -73,7 +73,7 @@ public class BackgroundScanService extends Service implements SensorEventListene
   // steps by second thresholds
   private double MIN_STEP_SPEED_THRESHOLD = 0.0005;
   private double MAX_STEP_SPEED_THRESHOLD = 0.02;
-  private double RSSI_THRESHOLD = -80;
+  private double RSSI_THRESHOLD = -100;
   // user speed thresholds
   private double MIN_USER_SPEED_THRESHOLD = 0.0005;
   private double MAX_USER_SPEED_THRESHOLD = 0.035;
